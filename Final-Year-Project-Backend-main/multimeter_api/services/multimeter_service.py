@@ -165,8 +165,22 @@ def getList(DB):
     if not unique_models:
         raise Exception("No models found!")
     models_with_ids = []
-    for model in DB.find({}, {"model": 1, "photo": 1}):
+    for model in DB.find(
+        {},
+        {
+            "created_at": 0,
+            "updated_at": 0,
+            "created_by": 0,
+            "description": 0,
+        },
+    ):
         models_with_ids.append(
-            {"id": str(model["_id"]), "model": model["model"], "image": model["photo"]}
+            {
+                "id": str(model["_id"]),
+                "model": model["model"],
+                "com_protocol": model["com_protocol"],
+                "com_configure": model["com_configure"],
+                "image": model["photo"],
+            }
         )
     return jsonify(models_with_ids), 200

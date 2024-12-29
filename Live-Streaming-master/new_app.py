@@ -28,6 +28,7 @@ class SerialError(Exception):
     pass
 
 
+
 app = Flask(__name__)
 
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -211,7 +212,7 @@ def clean_image(image):
     return output_image
 
 
-def find_defect(master, images, serial_no, model_name):
+def find_defect(master, images, model_name):
     try:
         classes = [0] * NO_FRAMES
         differences = [None] * NO_FRAMES
@@ -261,22 +262,10 @@ def find_defect(master, images, serial_no, model_name):
             captured_correct = cv2.imread(images[max_idx])
             cv2.imwrite("difference_correct.png", differences[max_idx])
             diff_cirr = cv2.imread("difference_correct.png")
-            save_in_directory(
-                "Risabh Images",
-                f"{model_name}",
-                [captured_correct, diff_cirr],
-                [f"{serial_no}.png", f"{serial_no}_diff.png"],
-            )
             return captured_correct, diff_cirr, "pass", operator_dependent
         captured_incorrect = cv2.imread(images[max_idx])
         cv2.imwrite("different_incorrect.png", differences[max_idx])
         diff = cv2.imread("different_incorrect.png")
-        save_in_directory(
-            "Risabh Images",
-            f"{model_name}",
-            [captured_incorrect, diff],
-            [f"{serial_no}.png", f"{serial_no}_diff.png"],
-        )
         return captured_incorrect, diff, "fail", operator_dependent
     except Exception as e:
         raise ImageProcessingError(f"Defect detection failed: {str(e)}")
@@ -351,7 +340,7 @@ def read_modbus_rtu(
 
     if not client.connect():
         print("Failed to connect to Modbus RTU device.")
-        return None
+        raise Exception("Failed to connect to Modbus RTU device.")
 
     try:
         # print("Connected. Reading registers...")
@@ -361,18 +350,18 @@ def read_modbus_rtu(
 
         if response.isError():
             print(f"Error reading registers: {response}")
-            return None
+            raise Exception(f"Error reading registers: {response}")
 
         # print(f"Data read successfully: {response.registers}")
         return response.registers
 
     except ModbusException as e:
         print(f"Modbus Exception occurred: {e}")
-        return None
+        raise Exception(f"Modbus Exception occurred: {e}")
 
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
-        return None
+        raise Exception(f"An unexpected error occurred: {e}")
 
     finally:
         client.close()
@@ -411,6 +400,7 @@ def modbus_serial(
         int(REGISTER_COUNT),
     )
     if data1 is not None and data2 is not None:
+
         sr_add = str(int(registers_to_float(data2)))
         return str(int(registers_to_float(data1))) + "0" * (6 - len(sr_add)) + sr_add
     else:
@@ -432,27 +422,24 @@ def video_feed():
 @app.route("/capture", methods=["POST"])
 def capture():
     try:
-        serial_no = request.form["serial_no"]
-        model_name = request.form["model_type"]
-        if not serial_no or not model_name:
+        model_name = request.json["model_type"]
+        if not model_name:
             return ImageProcessingError("Serial number or model name not provided"), 400
         captured_images = capture_distinct_frames(
             num_frames=NO_FRAMES, min_delay=DELAY_FRAMES
         )
         if len(captured_images) < NO_FRAMES:
             return jsonify({"error": "Could not capture enough distinct frames"}), 500
-        if "master" not in request.form:
+        if "master" not in request.json:
             return jsonify({"error": "Master image not provided"}), 400
-        master_data_url = request.form["master"]
+        master_data_url = request.json["master"]
         header, encoded = master_data_url.split(",", 1)
         master_data = base64.b64decode(encoded)
         master_path = "fetched_master.png"
         with open(master_path, "wb") as f:
             f.write(master_data)
         master = cv2.imread(master_path)
-        image, diff, res, od = find_defect(
-            master, captured_images, serial_no, model_name
-        )
+        image, diff, res, od = find_defect(master, captured_images, model_name)
         _, buffer = cv2.imencode(".png", image)
         _, diff = cv2.imencode(".png", diff) if diff is not None else (None, None)
         image_base64 = base64.b64encode(buffer).decode("utf-8")
@@ -508,34 +495,43 @@ def capture_master_image():
 @app.route("/getSerialNo", methods=["POST"])
 def get_serial_no():
     try:
-        COMM_PROTOCOL = request.form["com_protocol"]
-        if COMM_PROTOCOL == "modbus":
-            SERIAL_PORT = request.form["serial_port"]
-            BAUDRATE = request.form["baud_rate"]
-            PARITY = request.form["parity"]
-            STOPBITS = request.form["stop_bits"]
-            BYTESIZE = request.form["byte_size"]
-            SLAVE_ID = request.form["slave_id"]
-            DATE_REGISTER_START = request.form["date_register"]
-            SR_REGISTER_START = request.form["serial_no_register"]
-            REGISTER_COUNT = request.form["register_count"]
-            serial_no = modbus_serial(
-                SERIAL_PORT,
-                BAUDRATE,
-                PARITY,
-                STOPBITS,
-                BYTESIZE,
-                SLAVE_ID,
-                DATE_REGISTER_START,
-                SR_REGISTER_START,
-                REGISTER_COUNT,
-            )
-            return jsonify({"serial_no": serial_no})
-        else:
-            raise SerialError("Invalid communication protocol")
+        COMM_PROTOCOL = request.json["com_protocol"]
+        SERIAL_PORT = request.json["com_configure"]["serial_port"]
+        BAUDRATE = request.json["com_configure"]["baud_rate"]
+        PARITY = request.json["com_configure"]["parity"]
+        STOPBITS = request.json["com_configure"]["stop_bits"]
+        BYTESIZE = request.json["com_configure"]["byte_size"]
+        SLAVE_ID = request.json["com_configure"]["slave_id"]
+        DATE_REGISTER_START = request.json["com_configure"]["date_register"]
+        SR_REGISTER_START = request.json["com_configure"]["serial_no_register"]
+        REGISTER_COUNT = request.json["com_configure"]["register_count"]
+        print("This much")
+        serial_no = modbus_serial(
+            SERIAL_PORT,
+            BAUDRATE,
+            PARITY,
+            STOPBITS,
+            BYTESIZE,
+            SLAVE_ID,
+            DATE_REGISTER_START,
+            SR_REGISTER_START,
+            REGISTER_COUNT,
+        )
+        return jsonify({"serial_no": serial_no})
     except SerialError as e:
         app.logger.error(f"Unexpected error: {str(e)}")
-        raise
+        raise Exception("Serial Error")
+
+
+@app.route("/saveImages", methods=["POST"])
+def save_images():
+    try:
+        images = request.json["images"]
+        names = request.json["names"]
+        model_type = request.json["model_type"]
+        save_in_directory("D:/Rishabh_Images/", model_type, images, names)
+    except:
+        raise Exception("Save Image Error!")
 
 
 if __name__ == "__main__":

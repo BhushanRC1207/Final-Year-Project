@@ -8,3 +8,6 @@ class UpdateMultimeterDTO(BaseModel):
     description: Optional[StrictStr]
     photo: Optional[StrictStr]
     updated_at: Optional[datetime] = None
+    com_protocol: Optional[StrictStr]
+    com_configure: Optional[object]
+    

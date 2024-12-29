@@ -41,9 +41,9 @@ def create_inspection(DB, data):
     meter = DB["Multimeter"].find_one({"_id": ObjectId(data.meter_id)})
     if not meter:
         raise Exception("Meter not found!")
-    if data.serial_no and data.client:
+    if data.serial_no:
         exists = DB["Result"].find_one(
-            {"serial_no": data.serial_no, "client": data.client}
+            {"serial_no": data.serial_no}
         )
         if exists:
             DB["Result"].update_one(
@@ -69,7 +69,6 @@ def create_inspection(DB, data):
             )
     inspection = {
         "serial_no": data.serial_no,
-        "client": data.client,
         "meter_id": data.meter_id,
         "worker_id": data.worker_id,
         "status": data.status,
@@ -90,7 +89,7 @@ def fetch_inspections(DB, worker_id):
     my = request.args.get("my")
     if my:
         query["worker_id"] = worker_id
-    for key in ["serial_no", "client"]:
+    for key in ["serial_no"]:
         if request.args.get(key):
             query[key] = {"$regex": request.args.get(key), "$options": "i"}
     start_date = request.args.get("startDate")
@@ -135,7 +134,6 @@ def fetch_inspections(DB, worker_id):
                 "meter_id": 1,
                 "worker_id": 1,
                 "status": 1,
-                "client": 1,
                 "date": 1,
                 "meter_details.model": 1,
                 "worker_details.name": 1,
@@ -294,7 +292,6 @@ def generate_today_results(DB):
             "$project": {
                 "serial_no": 1,
                 "status": 1,
-                "client": 1,
                 "date": 1,
                 "meter_details.model": 1,
                 "worker_details.name": 1,
@@ -308,7 +305,6 @@ def generate_today_results(DB):
     for inspection in inspections:
         inspect = {}
         inspect["Serial No"] = inspection["serial_no"]
-        inspect["Client"] = inspection["client"]
         inspect["Date"] = datetime.strftime(inspection["date"], "%d-%m-%y")
         inspect["Time"] = datetime.strftime(inspection["date"], "%I:%M %p")
         inspect["Model"] = inspection["meter_details"]["model"]

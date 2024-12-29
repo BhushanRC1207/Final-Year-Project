@@ -16,6 +16,8 @@ interface InspectionState {
     masterImage: null;
     diffImage: null;
     od: boolean;
+    serial_no: string;
+    serialLoading: boolean;
     meta: {
         page: number;
         total: number;
@@ -37,6 +39,8 @@ const initialState: InspectionState = {
     masterImage: null,
     diffImage: null,
     od: false,
+    serial_no: '',
+    serialLoading: false,
     meta: {
         page: 1,
         total: 0,
@@ -109,7 +113,11 @@ export const checkMeter = createAsyncThunk(
     'inspections/checkMeter',
     async (form, { rejectWithValue }) => {
         try {
-            const response = await axios.post('http://localhost:3000/capture', form)
+            const response = await axios.post('http://localhost:3000/capture', form, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
             return response.data;
         } catch (error: any) {
             if (error.response && error.response.data) {
@@ -153,6 +161,22 @@ export const getInspections = createAsyncThunk(
     }
 );
 
+export const getSerialNumber = createAsyncThunk(
+    'inspections/getSerialNumber',
+    async (data, { rejectWithValue }) => {
+        try {
+            const response = await axios.post(`http://localhost:3000/getSerialNo`, data);
+            return response.data;
+        } catch (error: any) {
+            if (error.response && error.response.data) {
+                return rejectWithValue(error.response.data.error);
+            } else {
+                return rejectWithValue(error.message);
+            }
+        }
+    }
+)
+
 const inspectionSlice = createSlice({
     name: 'inspection',
     initialState,
@@ -174,6 +198,9 @@ const inspectionSlice = createSlice({
         },
         resetod(state) {
             state.od = false;
+        },
+        changeSerialNumber(state) {
+            state.serial_no = '';
         }
     },
     extraReducers: (builder) => {
@@ -253,9 +280,21 @@ const inspectionSlice = createSlice({
             .addCase(getInspections.rejected, (state, action: PayloadAction<any>) => {
                 state.inspectionsLoading = false;
                 state.error = action.payload;
-            });
+            })
+            .addCase(getSerialNumber.pending, (state, action: PayloadAction<any>) => {
+                state.serialLoading = true;
+                state.error = action.payload;
+            })
+            .addCase(getSerialNumber.fulfilled, (state, action: PayloadAction<any>) => {
+                state.serial_no = action.payload.serial_no;
+                state.serialLoading = false;
+            })
+            .addCase(getSerialNumber.rejected, (state, action: PayloadAction<any>) => {
+                state.serialLoading = false;
+                state.error = action.payload;
+            })
     },
 });
 
-export const { resetInspectionStatus, clearErrors, changeCapture, changeMasterImage, changeDiff, resetod } = inspectionSlice.actions;
+export const { resetInspectionStatus, clearErrors, changeCapture, changeMasterImage, changeDiff, resetod,changeSerialNumber } = inspectionSlice.actions;
 export default inspectionSlice.reducer;

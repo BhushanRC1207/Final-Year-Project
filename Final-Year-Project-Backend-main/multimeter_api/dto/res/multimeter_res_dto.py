@@ -11,3 +11,6 @@ class MultimeterResDTO(BaseModel):
     created_at: datetime
     updated_at: datetime
     created_by: StrictStr
+    com_protocol: StrictStr
+    com_configure: object
+    

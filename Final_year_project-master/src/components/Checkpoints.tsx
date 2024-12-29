@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { checkMeter, createInspection, getMeters, resetInspectionStatus, changeCapture, changeMasterImage, changeDiff, resetod } from '../slices/inspectionSlice';
+import { checkMeter, createInspection, getMeters, resetInspectionStatus, changeCapture, changeMasterImage, changeDiff, resetod, getSerialNumber, changeSerialNumber } from '../slices/inspectionSlice';
 import useErrorNotifier from '../hooks/useErrorNotifier';
 import { set } from 'react-datepicker/dist/date_utils';
 
@@ -18,7 +18,7 @@ interface Inspection {
 
 const Checkpoints: React.FC = () => {
     const dispatch = useDispatch();
-    const { meters, loading, checkLoading, inspectionStatus, capturedImage, masterImage, diffImage, od } = useSelector((state) => state.inspection);
+    const { meters, loading, checkLoading, inspectionStatus, capturedImage, masterImage, diffImage, od, serial_no, serialLoading } = useSelector((state) => state.inspection);
     const [operatorInput, setOperatorInput] = useState('');
     const [showPopup, setShowPopup] = useState(false);
     const [inspectionForm, setInspectionForm] = useState<Inspection>({
@@ -27,21 +27,21 @@ const Checkpoints: React.FC = () => {
         meter_id: '',
         client: ''
     });
+    const [currentMeter, setCurrentMeter] = useState<any>();
     const masterRef = useRef<HTMLImageElement>(null);
     const captureRef = useRef<HTMLButtonElement>(null);
     const capture = () => {
         const model_type = meters.find((meter: any) => meter.id === inspectionForm.meter_id).model;
         const captured_data = {
-            serial_no: inspectionForm.serial_no,
             model_type: model_type,
             master: masterImage,
         }
-        console.log(captured_data)
         dispatch(checkMeter(captured_data));
     };
 
 
     const retry = () => {
+        dispatch(changeSerialNumber())
         dispatch(changeCapture())
         dispatch(changeDiff())
         dispatch(resetod())
@@ -63,8 +63,14 @@ const Checkpoints: React.FC = () => {
     };
 
     const handleContinue = () => {
+        dispatch(createInspection({
+            ...inspectionForm,
+            serial_no: serial_no,
+            status: inspectionStatus === 'pass' ? InspectionStatus.pass : InspectionStatus.fail,
+        }));
         dispatch(changeCapture());
         dispatch(changeDiff())
+        dispatch(changeSerialNumber())
         dispatch(resetod())
         setInspectionForm(prev => ({
             ...prev,
@@ -75,8 +81,14 @@ const Checkpoints: React.FC = () => {
     };
 
     const handleSubmit = () => {
+        dispatch(createInspection({
+            ...inspectionForm,
+            serial_no: serial_no,
+            status: inspectionStatus === 'pass' ? InspectionStatus.pass : InspectionStatus.fail,
+        }));
         dispatch(changeCapture());
         dispatch(changeDiff())
+        dispatch(changeSerialNumber())
         dispatch(resetod())
         setInspectionForm({
             serial_no: '',
@@ -94,6 +106,7 @@ const Checkpoints: React.FC = () => {
             const selectedMeter = meters.find((meter: any) => meter.id === value);
             if (selectedMeter) {
                 dispatch(changeMasterImage(selectedMeter.image))
+                setCurrentMeter(selectedMeter);
             }
         }
         setInspectionForm({
@@ -104,12 +117,6 @@ const Checkpoints: React.FC = () => {
 
     const handleOperatorInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         setOperatorInput(e.target.value);
-        if (od && inspectionStatus) {
-            dispatch(createInspection({
-                ...inspectionForm,
-                status: e.target.value === 'pass' ? InspectionStatus.pass : InspectionStatus.fail,
-            }));
-        }
     };
 
     useEffect(() => {
@@ -117,19 +124,16 @@ const Checkpoints: React.FC = () => {
     }, [dispatch]);
     useEffect(() => {
         if (inspectionStatus === 'pass' || inspectionStatus === 'fail') {
-            setInspectionForm(prev => ({
-                ...prev,
-                status: inspectionStatus === 'pass' ? InspectionStatus.pass : InspectionStatus.fail
-            }));
-            setOperatorInput(inspectionStatus);
-            if (!od) {
-                dispatch(createInspection({
-                    ...inspectionForm,
-                    status: inspectionStatus === 'pass' ? InspectionStatus.pass : InspectionStatus.fail,
-                }));
-            }
+            const data = {};
+            Object.entries(currentMeter).map(([key, value]) => {
+                if (key === 'image') {
+                    return;
+                }
+                data[key] = value;
+            })
+            dispatch(getSerialNumber(data));
         }
-    }, [inspectionStatus, od]);
+    }, [inspectionStatus, od, currentMeter, dispatch]);
     console.log(inspectionForm)
 
     useErrorNotifier({ stateName: 'inspection' });
@@ -193,21 +197,11 @@ const Checkpoints: React.FC = () => {
                                 id="serialNumber"
                                 type="text"
                                 name="serial_no"
-                                value={inspectionForm.serial_no}
+                                value={serial_no}
                                 onChange={handleInputChange}
                                 className="p-2 rounded-md text-white"
                                 placeholder="Enter Serial Number"
-                                required
-                            />
-                            <label htmlFor="client" className="flex justify-start text-white text-md">Client</label>
-                            <input
-                                id="client"
-                                type="text"
-                                name="client"
-                                value={inspectionForm.client}
-                                onChange={handleInputChange}
-                                className="p-2 rounded-md text-white"
-                                placeholder="Enter Client Name"
+                                readOnly
                                 required
                             />
                             {
@@ -229,12 +223,12 @@ const Checkpoints: React.FC = () => {
                                     </>
                                 )
                             }
-                            <button
+                            {/*  <button
                                 onClick={() => setShowPopup(true)}
                                 className="bg-purple-500 text-white py-2 px-4 rounded hover:bg-purple-600 transition duration-300 w-full"
                             >
                                 Configure
-                            </button>
+                            </button> */}
 
                             {showPopup && (
                                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">

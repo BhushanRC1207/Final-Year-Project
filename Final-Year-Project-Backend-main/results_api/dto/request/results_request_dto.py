@@ -13,4 +13,3 @@ class ResultsRequestDTO(BaseModel):
     meter_id: constr(strict=True, min_length=1)
     worker_id: constr(strict=True, min_length=1)
     status: StatusEnum
-    client: constr(strict=True, min_length=1)

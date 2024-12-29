@@ -60,6 +60,20 @@ interface updateMeter {
   model?: string;
   description?: string;
   photo?: File | null;
+  com_protocol?: string;
+  com_configure?: {
+    'serial_port'?: string;
+    'baud_rate'?: string;
+    'parity'?: string;
+    'stop_bits'?: string;
+    'byte_size'?: string;
+    'ip'?: string;
+    'port'?: string;
+    'slave_id'?: string;
+    'register_count'?: string;
+    'serial_no_register'?: string;
+    'date_register'?: string;
+  }
 }
 
 const modbusFields = [
@@ -156,6 +170,18 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
       ...createMeter,
       com_configure: {
         ...createMeter.com_configure,
+        [name]: value
+      }
+    });
+  }
+
+
+  const updateComConfigure = (event) => {
+    const { name, value } = event.target;
+    setUpdateMeter({
+      ...updateMeter,
+      com_configure: {
+        ...updateMeter.com_configure,
         [name]: value
       }
     });
@@ -269,12 +295,45 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
           <button
             className="bg-blue-600 text-white text-sm my-4 py-1 px-3 rounded hover:bg-blue-700 transition duration-300 ease-in-out h-7 w-1/2"
             onClick={() => {
+              const prot = params.row.com_protocol;
+              if (prot == 'modbus') {
+                setUpdateMeter({
+                  model: params.row.model,
+                  description: params.row.description,
+                  photo: params.row.photo,
+                  com_protocol: params.row.com_protocol,
+                  com_configure: {
+                    slave_id: params.row.com_configure.slave_id,
+                    register_count: params.row.com_configure.register_count,
+                    serial_no_register: params.row.com_configure.serial_no_register,
+                    date_register: params.row.com_configure.date_register,
+                    serial_port: params.row.com_configure.serial_port,
+                    baud_rate: params.row.com_configure.baud_rate,
+                    parity: params.row.com_configure.parity,
+                    stop_bits: params.row.com_configure.stop_bits,
+                    byte_size: params.row.com_configure.byte_size,
+                  }
+                });
+              }
+              else {
+                setUpdateMeter({
+                  model: params.row.model,
+                  description: params.row.description,
+                  photo: params.row.photo,
+                  com_protocol: params.row.com_protocol,
+                  com_configure: {
+                    slave_id: params.row.com_configure.slave_id,
+                    register_count: params.row.com_configure.register_count,
+                    serial_no_register: params.row.com_configure.serial_no_register,
+                    date_register: params.row.com_configure.date_register,
+                    ip: params.row.com_configure.ip,
+                    port: params.row.com_configure.port
+
+                  }
+                });
+              }
               setActiveTab('update');
-              setUpdateMeter({
-                model: params.row.model,
-                description: params.row.description,
-                photo: params.row.photo,
-              });
+
               setSelectedMeter(params.row);
             }}
           > Update
@@ -293,7 +352,7 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
     },
 
   ];
-  console.log(createMeter)
+  console.log(updateMeter)
   return (
     <div className="container">
       <h1 className="text-2xl font-bold text-center mb-6">Meter Management</h1>
@@ -491,13 +550,38 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
                 </button>
                 <h2 className="text-2xl text-white font-semibold mb-6">Update Meter</h2>
                 <div className="flex justify-between gap-8">
-                  <div className='flex flex-col gap-4 w-1/2'>
+
+
+
+                  <div className='flex flex-col gap-4 w-1/2 p-2 overflow-y-scroll custom-scrollbar h-64'>
                     {Object.entries(updateMeter).map(([key, value]) => {
-                      if (key === 'photo') return null;
+                      if (key === 'photo' || key ===
+                        "com_configure"
+                      ) return null;
+                      if (key === 'com_protocol') {
+                        return (
+                          <div key={key}>
+                            <label className="block text-md font-semibold text-white mb-2 float-left" htmlFor={key}>
+                              {nameTolabelMap[key]}
+                            </label>
+                            <select
+                              style={{ backgroundColor: '#1F2937', color: 'white' }}
+                              className="border rounded p-2 w-full text-white"
+                              name={key}
+                              value={value}
+                              onChange={handleUpdate}
+                            >
+                              <option value="">Select Protocol</option>
+                              <option value="modbus">Modbus/USB</option>
+                              <option value="ethernet">Ethernet</option>
+                            </select>
+                          </div>
+                        );
+                      }
                       return (
                         <div key={key}>
-                          <label className="block text-md font-semibold text-gray-800 mb-2" htmlFor={key}>
-                            Meter {key.charAt(0).toUpperCase() + key.slice(1)}
+                          <label className="block text-md font-semibold text-white mb-2 float-left" htmlFor={key}>
+                            {nameTolabelMap[key]}
                           </label>
                           <input
                             style={{ backgroundColor: '#1F2937', color: 'white' }}
@@ -511,6 +595,62 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
                         </div>
                       );
                     })}
+                    {['slave_id', 'register_count', 'serial_no_register', 'date_register'].map((key) => (
+                      <div key={key}>
+                        <label className="block text-md font-semibold text-white mb-2 float-left" htmlFor={key}>
+                          {nameTolabelMap[key]}
+                        </label>
+                        <input
+                          style={{ backgroundColor: '#1F2937', color: 'white' }}
+                          className="border rounded p-2 w-full text-white"
+                          name={key}
+                          type="text"
+                          placeholder={`${nameTolabelMap[key]}`}
+                          value={updateMeter.com_configure[key]}
+                          onChange={updateComConfigure}
+                        />
+                      </div>
+                    ))}
+                    {updateMeter.com_protocol === 'modbus' && (
+                      <>
+                        {modbusFields.map((key) => (
+                          <div key={key}>
+                            <label className="block text-md font-semibold text-white mb-2 float-left" htmlFor={key}>
+                              {nameTolabelMap[key]}
+                            </label>
+                            <input
+                              style={{ backgroundColor: '#1F2937', color: 'white' }}
+                              className="border rounded p-2 w-full text-white"
+                              name={key}
+                              type="text"
+                              placeholder={`${nameTolabelMap[key]}`}
+                              value={updateMeter.com_configure[key]}
+                              onChange={updateComConfigure}
+                            />
+                          </div>
+                        ))}
+                      </>
+                    )}
+                    {updateMeter.com_protocol === 'ethernet' && (
+                      <>
+                        {ethernetFields.map((key) => (
+                          <div key={key}>
+                            <label className="block text-md font-semibold text-white mb-2 float-left" htmlFor={key}>
+                              {nameTolabelMap[key]}
+                            </label>
+                            <input
+                              style={{ backgroundColor: '#1F2937', color: 'white' }}
+                              className="border rounded p-2 w-full text-white"
+                              name={key}
+                              type="text"
+                              placeholder={`${nameTolabelMap[key]}`}
+                              value={updateMeter.com_configure[key]}
+                              onChange={updateComConfigure}
+                            />
+                          </div>
+                        ))}
+                      </>
+                    )}
                   </div>
                   <div className="flex flex-col items-center w-1/2">
                     <img
@@ -542,11 +682,7 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
                 <button
                   className="bg-teal-600 text-white py-2 px-6 rounded hover:bg-teal-500 mt-6 w-1/2"
                   onClick={() => {
-                    const formData = new FormData();
-                    Object.entries(updateMeter).forEach(([key, value]) => {
-                      formData.append(key, value);
-                    });
-                    dispatch(updateExistMeter({ id: selectedMeter.id, meter: formData }));
+                    dispatch(updateExistMeter({ id: selectedMeter.id, meter: updateMeter }));
                     dispatch(resetMasterImage());
                     setActiveTab('get');
                     resetform();
