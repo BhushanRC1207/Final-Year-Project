@@ -7,6 +7,9 @@ import os
 import base64
 from skimage.metrics import structural_similarity as ssim
 import time
+from pymodbus.client import ModbusSerialClient
+from pymodbus.exceptions import ModbusException
+import struct
 
 
 class CameraError(Exception):
@@ -18,6 +21,10 @@ class ImageProcessingError(Exception):
 
 
 class AlignmentError(Exception):
+    pass
+
+
+class SerialError(Exception):
     pass
 
 
@@ -45,6 +52,11 @@ def handle_alignment_error(error):
 @app.errorhandler(Exception)
 def handle_generic_error(error):
     return jsonify({"error": "Internal server error"}), 500
+
+
+@app.errorhandler(SerialError)
+def handle_serial_error(error):
+    return jsonify({"error": "Serial Error"}), 500
 
 
 hCam = ueye.HIDS(0)
@@ -319,6 +331,92 @@ def save_in_directory(root_dir, subdir, images, names):
         raise Exception(f"Failed to save images: {str(e)}")
 
 
+def registers_to_float(registers):
+    combined = (registers[0] << 16) + registers[1]
+    return struct.unpack("f", struct.pack("I", combined))[0]
+
+
+def read_modbus_rtu(
+    port, baudrate, parity, stopbits, bytesize, slave_id, register_start, register_count
+):
+    # print(f"Connecting to Modbus RTU device at {port} (Slave ID: {slave_id})...")
+    client = ModbusSerialClient(
+        port=port,
+        baudrate=baudrate,
+        parity=parity,
+        stopbits=stopbits,
+        bytesize=bytesize,
+        timeout=1,
+    )
+
+    if not client.connect():
+        print("Failed to connect to Modbus RTU device.")
+        return None
+
+    try:
+        # print("Connected. Reading registers...")
+        response = client.read_holding_registers(
+            address=register_start, count=register_count, slave=slave_id
+        )
+
+        if response.isError():
+            print(f"Error reading registers: {response}")
+            return None
+
+        # print(f"Data read successfully: {response.registers}")
+        return response.registers
+
+    except ModbusException as e:
+        print(f"Modbus Exception occurred: {e}")
+        return None
+
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return None
+
+    finally:
+        client.close()
+        # print("Connection closed.")
+
+
+def modbus_serial(
+    SERIAL_PORT,
+    BAUDRATE,
+    PARITY,
+    STOPBITS,
+    BYTESIZE,
+    SLAVE_ID,
+    DATE_REGISTER_START,
+    SR_REGISTER_START,
+    REGISTER_COUNT,
+):
+    data1 = read_modbus_rtu(
+        str(SERIAL_PORT),
+        int(BAUDRATE),
+        str(PARITY),
+        int(STOPBITS),
+        int(BYTESIZE),
+        int(SLAVE_ID),
+        int(DATE_REGISTER_START) - 1,
+        int(REGISTER_COUNT),
+    )
+    data2 = read_modbus_rtu(
+        str(SERIAL_PORT),
+        int(BAUDRATE),
+        str(PARITY),
+        int(STOPBITS),
+        int(BYTESIZE),
+        int(SLAVE_ID),
+        int(SR_REGISTER_START) - 1,
+        int(REGISTER_COUNT),
+    )
+    if data1 is not None and data2 is not None:
+        sr_add = str(int(registers_to_float(data2)))
+        return str(int(registers_to_float(data1))) + "0" * (6 - len(sr_add)) + sr_add
+    else:
+        return "Error while reading"
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -403,6 +501,39 @@ def capture_master_image():
         print(e)
         raise
     except Exception as e:
+        app.logger.error(f"Unexpected error: {str(e)}")
+        raise
+
+
+@app.route("/getSerialNo", methods=["POST"])
+def get_serial_no():
+    try:
+        COMM_PROTOCOL = request.form["com_protocol"]
+        if COMM_PROTOCOL == "modbus":
+            SERIAL_PORT = request.form["serial_port"]
+            BAUDRATE = request.form["baud_rate"]
+            PARITY = request.form["parity"]
+            STOPBITS = request.form["stop_bits"]
+            BYTESIZE = request.form["byte_size"]
+            SLAVE_ID = request.form["slave_id"]
+            DATE_REGISTER_START = request.form["date_register"]
+            SR_REGISTER_START = request.form["serial_no_register"]
+            REGISTER_COUNT = request.form["register_count"]
+            serial_no = modbus_serial(
+                SERIAL_PORT,
+                BAUDRATE,
+                PARITY,
+                STOPBITS,
+                BYTESIZE,
+                SLAVE_ID,
+                DATE_REGISTER_START,
+                SR_REGISTER_START,
+                REGISTER_COUNT,
+            )
+            return jsonify({"serial_no": serial_no})
+        else:
+            raise SerialError("Invalid communication protocol")
+    except SerialError as e:
         app.logger.error(f"Unexpected error: {str(e)}")
         raise
 

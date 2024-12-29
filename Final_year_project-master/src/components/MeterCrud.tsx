@@ -41,7 +41,19 @@ interface createMeter {
   description: string;
   photo: File | null;
   com_protocol: string;
-  com_configure: modbusFields | ethernetFields;
+  com_configure: {
+    'serial_port'?: string;
+    'baud_rate'?: string;
+    'parity'?: string;
+    'stop_bits'?: string;
+    'byte_size'?: string;
+    'ip'?: string;
+    'port'?: string;
+    'slave_id': string;
+    'register_count': string;
+    'serial_no_register': string;
+    'date_register': string;
+  }
 }
 
 interface updateMeter {
@@ -50,18 +62,18 @@ interface updateMeter {
   photo?: File | null;
 }
 
-interface modbusFields {
-  serial_port: string;
-  baud_rate: number;
-  parity: string;
-  stop_bits: number;
-  byte_size: number;
-}
+const modbusFields = [
+  'serial_port',
+  'baud_rate',
+  'parity',
+  'stop_bits',
+  'byte_size',
+]
 
-interface ethernetFields {
-  ip: string;
-  port: number;
-}
+const ethernetFields = [
+  'ip',
+  'port',
+]
 
 const nameTolabelMap = {
   model: "Meter Name",
@@ -93,7 +105,12 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
     description: '',
     photo: null,
     com_protocol: '',
-    com_configure: {} as modbusFields | ethernetFields,
+    com_configure: {
+      slave_id: '',
+      register_count: '',
+      serial_no_register: '',
+      date_register: '',
+    }
   });
   const [selectedMeter, setSelectedMeter] = useState<any>(null);
   const [updateMeter, setUpdateMeter] = useState<updateMeter>({
@@ -116,13 +133,8 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
   };
 
   const handleInputChange = (event) => {
-    const { name, value, files } = event.target;
-    if (name === 'photo' && files) {
-      setCreateMeter({
-        ...createMeter,
-        photo: files[0]
-      });
-    } else if (name in createMeter.com_configure) {
+    const { name, value } = event.target;
+    if (name in createMeter.com_configure) {
       setCreateMeter({
         ...createMeter,
         com_configure: {
@@ -137,6 +149,17 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
       });
     }
   };
+
+  const handleComConfigure = (event) => {
+    const { name, value } = event.target;
+    setCreateMeter({
+      ...createMeter,
+      com_configure: {
+        ...createMeter.com_configure,
+        [name]: value
+      }
+    });
+  }
 
   const handleUpdate = (event) => {
     const { name, value } = event.target;
@@ -166,7 +189,12 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
         description: '',
         photo: null,
         com_protocol: '',
-        com_configure: {} as modbusFields | ethernetFields,
+        com_configure: {
+          slave_id: '',
+          register_count: '',
+          serial_no_register: '',
+          date_register: '',
+        }
       });
     }
     else {
@@ -291,13 +319,16 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
             <div className="bg-gray-800 p-8 rounded-lg shadow-lg relative w-3/4 max-w-4xl">
               <button
                 className="absolute top-2 right-2 text-white"
-                onClick={() => setActiveTab('get')}
+                onClick={() => {
+                  setActiveTab('get');
+                  resetform();
+                }}
               >
                 ✕
               </button>
               <h2 className="text-2xl text-white font-semibold mb-6">Add Meter</h2>
               <div className='flex justify-between gap-8'>
-                <div className='flex flex-col gap-4 w-1/2 p-2'>
+                <div className='flex flex-col gap-4 w-1/2 p-2 overflow-y-scroll custom-scrollbar h-64'>
                   {Object.entries(createMeter).map(([key, value]) => {
                     if (key === 'photo' || key ===
                       "com_configure"
@@ -306,7 +337,7 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
                       return (
                         <div key={key}>
                           <label className="block text-md font-semibold text-white mb-2 float-left" htmlFor={key}>
-                            Meter {key.charAt(0).toUpperCase() + key.slice(1)}
+                            {nameTolabelMap[key]}
                           </label>
                           <select
                             style={{ backgroundColor: '#1F2937', color: 'white' }}
@@ -339,9 +370,25 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
                       </div>
                     );
                   })}
+                  {['slave_id', 'register_count', 'serial_no_register', 'date_register'].map((key) => (
+                    <div key={key}>
+                      <label className="block text-md font-semibold text-white mb-2 float-left" htmlFor={key}>
+                        {nameTolabelMap[key]}
+                      </label>
+                      <input
+                        style={{ backgroundColor: '#1F2937', color: 'white' }}
+                        className="border rounded p-2 w-full text-white"
+                        name={key}
+                        type="text"
+                        placeholder={`${nameTolabelMap[key]}`}
+                        value={createMeter.com_configure[key]}
+                        onChange={handleComConfigure}
+                      />
+                    </div>
+                  ))}
                   {createMeter.com_protocol === 'modbus' && (
                     <>
-                      {Object.entries(createMeter.com_configure as modbusFields).map(([key, value]) => (
+                      {modbusFields.map((key) => (
                         <div key={key}>
                           <label className="block text-md font-semibold text-white mb-2 float-left" htmlFor={key}>
                             {nameTolabelMap[key]}
@@ -351,9 +398,9 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
                             className="border rounded p-2 w-full text-white"
                             name={key}
                             type="text"
-                            placeholder={`Meter ${key}`}
-                            value={value}
-                            onChange={handleInputChange}
+                            placeholder={`${nameTolabelMap[key]}`}
+                            value={createMeter.com_configure[key]}
+                            onChange={handleComConfigure}
                           />
                         </div>
                       ))}
@@ -361,7 +408,7 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
                   )}
                   {createMeter.com_protocol === 'ethernet' && (
                     <>
-                      {Object.entries(createMeter.com_configure as ethernetFields).map(([key, value]) => (
+                      {ethernetFields.map((key) => (
                         <div key={key}>
                           <label className="block text-md font-semibold text-white mb-2 float-left" htmlFor={key}>
                             {nameTolabelMap[key]}
@@ -371,9 +418,9 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
                             className="border rounded p-2 w-full text-white"
                             name={key}
                             type="text"
-                            placeholder={`Meter ${key}`}
-                            value={value}
-                            onChange={handleInputChange}
+                            placeholder={`${nameTolabelMap[key]}`}
+                            value={createMeter.com_configure[key]}
+                            onChange={handleComConfigure}
                           />
                         </div>
                       ))}
@@ -421,11 +468,7 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
               <button
                 className="bg-teal-600 text-white py-2 px-6 rounded hover:bg-teal-500 mt-6 w-1/2"
                 onClick={() => {
-                  const formData = new FormData();
-                  Object.entries(createMeter).forEach(([key, value]) => {
-                    formData.append(key, value);
-                  });
-                  dispatch(addMeter(formData));
+                  dispatch(addMeter(createMeter));
                   dispatch(resetMasterImage());
                   setActiveTab('get');
                   resetform();

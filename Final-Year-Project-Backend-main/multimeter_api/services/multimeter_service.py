@@ -5,6 +5,10 @@ from multimeter_api.dto.req.update_multimeter_dto import UpdateMultimeterDTO
 from multimeter_api.dto.res.multimeter_res_dto import MultimeterResDTO
 from datetime import datetime
 from middleware.upload_photos import upload_image
+from pymodbus.client import ModbusSerialClient
+from pymodbus.exceptions import ModbusException
+import struct
+
 
 """ Handle Pagination """
 
