@@ -20,6 +20,7 @@ const Checkpoints: React.FC = () => {
     const dispatch = useDispatch();
     const { meters, loading, checkLoading, inspectionStatus, capturedImage, masterImage, diffImage, od } = useSelector((state) => state.inspection);
     const [operatorInput, setOperatorInput] = useState('');
+    const [showPopup, setShowPopup] = useState(false);
     const [inspectionForm, setInspectionForm] = useState<Inspection>({
         serial_no: '',
         status: '',
@@ -228,6 +229,55 @@ const Checkpoints: React.FC = () => {
                                     </>
                                 )
                             }
+                            <button
+                                onClick={() => setShowPopup(true)}
+                                className="bg-purple-500 text-white py-2 px-4 rounded hover:bg-purple-600 transition duration-300 w-full"
+                            >
+                                Configure
+                            </button>
+
+                            {showPopup && (
+                                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                                    <div className="bg-white p-2 rounded-lg shadow-lg">
+                                        <h2 className="text-xl mb-4 text-black bg-gray-200 p-3 rounded-md">Configuration</h2>
+                                        <div className="flex flex-col gap-4">
+                                            <div>
+                                                <h3 className="text-lg mb-2 text-black">Camera Settings</h3>
+                                                <div className="flex flex-col gap-2">
+                                                    <div className="flex justify-between items-center">
+                                                        <label className="text-md text-black">Camera to Meter Distance</label>
+                                                        <span className="p-2 border rounded-md w-1/2 text-black">50 cm</span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center">
+                                                        <label className="text-md text-black">Camera Height</label>
+                                                        <span className="p-2 border rounded-md w-1/2 text-black">150 cm</span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center">
+                                                        <label className="text-md text-black">Meter Height</label>
+                                                        <span className="p-2 border rounded-md w-1/2 text-black">100 cm</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h3 className="text-lg mb-2 text-black">Set File Storage Directory</h3>
+                                                <input
+                                                    type="file"
+                                                    webkitdirectory="true"
+                                                    directory="true"
+                                                    className="p-2 border rounded-md"
+                                                    onChange={(e) => console.log(e.target.files)}
+                                                />
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowPopup(false)}
+                                            className="bg-red-500 text-white py-2 my-2 px-4 rounded hover:bg-red-600 transition duration-300"
+                                        >
+                                            Close
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         <div className='flex justify-between'>
                             <button

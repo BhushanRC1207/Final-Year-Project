@@ -22,7 +22,6 @@ class AlignmentError(Exception):
 
 
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024 
 
 CORS(app, resources={r"/*": {"origins": "*"}})
 
@@ -133,8 +132,8 @@ def align_images(master, input):
             if m.distance < 0.75 * n.distance:
                 good_matches.append(m)
         good_matches = sorted(good_matches, key=lambda x: x.distance)
-        # if len(good_matches) < 4:
-        #     raise AlignmentError("Not enough good matches")
+        if len(good_matches) < 4:
+            raise AlignmentError("Not enough good matches")
         pts1 = np.float32([keypoints1[m.queryIdx].pt for m in good_matches]).reshape(
             -1, 1, 2
         )
@@ -335,8 +334,8 @@ def video_feed():
 @app.route("/capture", methods=["POST"])
 def capture():
     try:
-        serial_no = request.json["serial_no"]
-        model_name = request.json["model_type"]
+        serial_no = request.form["serial_no"]
+        model_name = request.form["model_type"]
         if not serial_no or not model_name:
             return ImageProcessingError("Serial number or model name not provided"), 400
         captured_images = capture_distinct_frames(
@@ -344,9 +343,9 @@ def capture():
         )
         if len(captured_images) < NO_FRAMES:
             return jsonify({"error": "Could not capture enough distinct frames"}), 500
-        if "master" not in request.json:
+        if "master" not in request.form:
             return jsonify({"error": "Master image not provided"}), 400
-        master_data_url = request.json["master"]
+        master_data_url = request.form["master"]
         header, encoded = master_data_url.split(",", 1)
         master_data = base64.b64decode(encoded)
         master_path = "fetched_master.png"
@@ -373,6 +372,35 @@ def capture():
             }
         )
     except (CameraError, ImageProcessingError, AlignmentError) as e:
+        raise
+    except Exception as e:
+        app.logger.error(f"Unexpected error: {str(e)}")
+        raise
+
+
+@app.route("/capture_master_image", methods=["POST"])
+def capture_master_image():
+    try:
+        # Capture a single frame
+        image_buffer = np.zeros((camera_height, camera_width, 3), dtype=np.uint8)
+        ret = ueye.is_FreezeVideo(hCam, ueye.IS_WAIT)
+        if ret != ueye.IS_SUCCESS:
+            raise CameraError(f"Frame capture failed: {ret}")
+
+        # Copy to buffer
+        ueye.is_CopyImageMem(hCam, mem_ptr, mem_id, image_buffer.ctypes.data)
+
+        # Encode image to JPEG format
+        ret, buffer = cv2.imencode(".jpg", image_buffer)
+        if not ret:
+            raise ImageProcessingError("Failed to encode frame to JPEG")
+
+        frame = buffer.tobytes()
+        image_base64 = base64.b64encode(frame).decode("utf-8")
+
+        return jsonify({"image": f"data:image/jpeg;base64,{image_base64}"})
+    except (CameraError, ImageProcessingError) as e:
+        print(e)
         raise
     except Exception as e:
         app.logger.error(f"Unexpected error: {str(e)}")

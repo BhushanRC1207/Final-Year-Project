@@ -6,7 +6,7 @@ from multimeter_api.services.multimeter_service import (
     getMultimeters,
     updateMultimeter,
     deleteMultimeter,
-    getList
+    getList,
 )
 from middleware.auth import jwt_required, check_role
 
@@ -27,27 +27,24 @@ def get_list():
 
 @multimeter_bp.route("/multimeter", methods=["POST"])
 @jwt_required
-# @check_role("admin")
 def add_multimeter():
-    new_multimeter = request.form.to_dict()
+    new_multimeter = request.json
     worker_id = get_jwt_identity()
-    new_multimeter["created_by"] = worker_id
+    new_multimeter["created_by"] = str(worker_id)
     data = createMultimeter(DB["Multimeter"], new_multimeter)
     return data
 
 
 @multimeter_bp.route("/multimeter/<string:id>", methods=["PUT"])
 @jwt_required
-# @check_role("admin")
 def update_multimeter(id):
-    updated_data = request.form.to_dict()
+    updated_data = request.json
     data = updateMultimeter(DB["Multimeter"], updated_data, id)
     return data
 
 
 @multimeter_bp.route("/multimeter/<string:id>", methods=["DELETE"])
 @jwt_required
-# @check_role("admin")
 def delete_multimeter(id):
     data = deleteMultimeter(DB["Multimeter"], id)
     return data

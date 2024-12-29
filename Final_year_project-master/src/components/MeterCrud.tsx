@@ -3,7 +3,8 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import Tooltip from '@mui/material/Tooltip';
-import { addMeter, deleteMeter, getMeters, updateExistMeter } from '../slices/adminSlice';
+import { addMeter, captureMaster, deleteMeter, getMeters, resetMasterImage, updateExistMeter } from '../slices/adminSlice';
+import '../styles/customScrollbar.css';
 
 
 const theme = createTheme({
@@ -39,6 +40,8 @@ interface createMeter {
   model: string;
   description: string;
   photo: File | null;
+  com_protocol: string;
+  com_configure: modbusFields | ethernetFields;
 }
 
 interface updateMeter {
@@ -47,9 +50,39 @@ interface updateMeter {
   photo?: File | null;
 }
 
+interface modbusFields {
+  serial_port: string;
+  baud_rate: number;
+  parity: string;
+  stop_bits: number;
+  byte_size: number;
+}
+
+interface ethernetFields {
+  ip: string;
+  port: number;
+}
+
+const nameTolabelMap = {
+  model: "Meter Name",
+  description: "Meter Description",
+  com_protocol: "Communication Protocol",
+  date_register: "Date Register",
+  serial_no_register: "Serial No Register",
+  slave_id: "Slave ID",
+  register_count: "Register Count",
+  serial_port: "Serial Port",
+  baud_rate: "Baud Rate",
+  parity: "Parity",
+  stop_bits: "Stop Bits",
+  byte_size: "Byte Size",
+  ip: "IP",
+  port: "Port"
+}
+
 const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
   const dispatch = useDispatch();
-  const { meters, loading, meta } = useSelector((state: any) => state.admin);
+  const { meters, loading, meta, masterImage } = useSelector((state: any) => state.admin);
   const [paginationModel, setPaginationModel] = useState({
     page: 0, pageSize: 10,
   });
@@ -59,6 +92,8 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
     model: '',
     description: '',
     photo: null,
+    com_protocol: '',
+    com_configure: {} as modbusFields | ethernetFields,
   });
   const [selectedMeter, setSelectedMeter] = useState<any>(null);
   const [updateMeter, setUpdateMeter] = useState<updateMeter>({
@@ -87,6 +122,14 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
         ...createMeter,
         photo: files[0]
       });
+    } else if (name in createMeter.com_configure) {
+      setCreateMeter({
+        ...createMeter,
+        com_configure: {
+          ...createMeter.com_configure,
+          [name]: value
+        }
+      });
     } else {
       setCreateMeter({
         ...createMeter,
@@ -96,18 +139,12 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
   };
 
   const handleUpdate = (event) => {
-    const { name, value, files } = event.target;
-    if (name === 'photo' && files) {
-      setUpdateMeter({
-        ...updateMeter,
-        photo: files[0]
-      });
-    } else {
-      setUpdateMeter({
-        ...updateMeter,
-        [name]: value
-      });
-    }
+    const { name, value } = event.target;
+    setUpdateMeter({
+      ...updateMeter,
+      [name]: value
+
+    })
   }
 
   const confirmDelete = () => {
@@ -128,6 +165,8 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
         model: '',
         description: '',
         photo: null,
+        com_protocol: '',
+        com_configure: {} as modbusFields | ethernetFields,
       });
     }
     else {
@@ -146,6 +185,23 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
       model: searchQuery
     }));
   }, [dispatch, paginationModel, searchQuery]);
+
+  useEffect(() => {
+    if (masterImage) {
+      setCreateMeter((prev) => ({
+        ...prev,
+        photo: masterImage,
+      }));
+    }
+  }, [masterImage]);
+  useEffect(() => {
+    if (masterImage) {
+      setUpdateMeter((prev) => ({
+        ...prev,
+        photo: masterImage,
+      }));
+    }
+  }, [masterImage]);
 
   const columns: GridColDef[] = [
     { field: 'model', headerName: 'Model', width: 100, headerAlign: 'center', align: 'center' },
@@ -209,7 +265,7 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
     },
 
   ];
-
+  console.log(createMeter)
   return (
     <div className="container">
       <h1 className="text-2xl font-bold text-center mb-6">Meter Management</h1>
@@ -232,112 +288,229 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
       <div className="grid grid-cols-1 gap-4">
         {activeTab === 'add' && (
           <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded shadow-lg relative w-1/3">
+            <div className="bg-gray-800 p-8 rounded-lg shadow-lg relative w-3/4 max-w-4xl">
               <button
-                className="absolute bg-white top-2 right-2 text-gray-700 hover:text-gray-500"
+                className="absolute top-2 right-2 text-white"
                 onClick={() => setActiveTab('get')}
               >
                 ✕
               </button>
-              <h2 className="text-xl text-gray-700 font-semibold mb-4">Add Meter</h2>
-              {Object.entries(createMeter).map(([key, value]) => {
-                return (
-                  <div key={key}>
-                    {(key === 'screen_photos' || key === 'photo') && (
-                      <label className="flex justify-start text-md font-semibold text-gray-800" htmlFor={key}>
-                        Meter Photos
-                      </label>
-                    )}
-                    <input
-                      style={{ backgroundColor: '#1F2937', color: 'white' }}
-                      className="border border-gray-300 rounded p-2 mb-2 w-full"
-                      name={key}
-                      type={key === 'photo' || key === 'screen_photos' ? 'file' : 'text'}
-                      placeholder={`Meter ${key}`}
-                      defaultValue={key === 'screen_photos' ? undefined : value}
-                      onChange={handleInputChange}
-                      multiple={key === 'screen_photos'}
-                      accept={
-                        (key === 'screen_photos' || key === 'photo') ? 'image/*' : undefined
-                      }
-                    />
-                  </div>
-                );
-              })}
-              <button className="bg-teal-600 text-white py-2 rounded hover:bg-teal-500" onClick={() => {
-                const formData = new FormData();
-                Object.entries(createMeter).forEach(([key, value]) => {
-                  if (key === 'photo') {
-                    formData.append(key, value);
-                  } else {
-                    formData.append(key, value);
+              <h2 className="text-2xl text-white font-semibold mb-6">Add Meter</h2>
+              <div className='flex justify-between gap-8'>
+                <div className='flex flex-col gap-4 w-1/2 p-2'>
+                  {Object.entries(createMeter).map(([key, value]) => {
+                    if (key === 'photo' || key ===
+                      "com_configure"
+                    ) return null;
+                    if (key === 'com_protocol') {
+                      return (
+                        <div key={key}>
+                          <label className="block text-md font-semibold text-white mb-2 float-left" htmlFor={key}>
+                            Meter {key.charAt(0).toUpperCase() + key.slice(1)}
+                          </label>
+                          <select
+                            style={{ backgroundColor: '#1F2937', color: 'white' }}
+                            className="border rounded p-2 w-full text-white"
+                            name={key}
+                            value={value}
+                            onChange={handleInputChange}
+                          >
+                            <option value="">Select Protocol</option>
+                            <option value="modbus">Modbus/USB</option>
+                            <option value="ethernet">Ethernet</option>
+                          </select>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div key={key}>
+                        <label className="block text-md font-semibold text-white mb-2 float-left" htmlFor={key}>
+                          {nameTolabelMap[key]}
+                        </label>
+                        <input
+                          style={{ backgroundColor: '#1F2937', color: 'white' }}
+                          className="border rounded p-2 w-full text-white"
+                          name={key}
+                          type="text"
+                          placeholder={`Meter ${key}`}
+                          value={value}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+                    );
+                  })}
+                  {createMeter.com_protocol === 'modbus' && (
+                    <>
+                      {Object.entries(createMeter.com_configure as modbusFields).map(([key, value]) => (
+                        <div key={key}>
+                          <label className="block text-md font-semibold text-white mb-2 float-left" htmlFor={key}>
+                            {nameTolabelMap[key]}
+                          </label>
+                          <input
+                            style={{ backgroundColor: '#1F2937', color: 'white' }}
+                            className="border rounded p-2 w-full text-white"
+                            name={key}
+                            type="text"
+                            placeholder={`Meter ${key}`}
+                            value={value}
+                            onChange={handleInputChange}
+                          />
+                        </div>
+                      ))}
+                    </>
+                  )}
+                  {createMeter.com_protocol === 'ethernet' && (
+                    <>
+                      {Object.entries(createMeter.com_configure as ethernetFields).map(([key, value]) => (
+                        <div key={key}>
+                          <label className="block text-md font-semibold text-white mb-2 float-left" htmlFor={key}>
+                            {nameTolabelMap[key]}
+                          </label>
+                          <input
+                            style={{ backgroundColor: '#1F2937', color: 'white' }}
+                            className="border rounded p-2 w-full text-white"
+                            name={key}
+                            type="text"
+                            placeholder={`Meter ${key}`}
+                            value={value}
+                            onChange={handleInputChange}
+                          />
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </div>
+
+                <div className="flex flex-col items-center w-1/2">
+                  {
+                    masterImage ? (
+                      <img
+                        src={masterImage}
+                        alt="Meter Preview"
+                        className="w-full h-auto mb-4 rounded-lg"
+                      />
+                    ) : (
+                      <img
+                        src={'http://localhost:3000/video_feed'}
+                        alt="Meter Preview"
+                        className="w-full h-auto mb-4 rounded-lg"
+                      />
+                    )
                   }
-                });
-                dispatch(addMeter(formData));
-                setActiveTab('get');
-                resetform();
-              }} >Add Meter</button>
+                  <div className="flex space-x-4 w-full justify-between">
+                    <button
+                      className="bg-yellow-600 text-white py-2 px-4 rounded hover:bg-yellow-500 w-1/2"
+                      onClick={() => {
+                        setCreateMeter({ ...createMeter, photo: null });
+                        dispatch(resetMasterImage());
+                      }}
+                    >
+                      Retry
+                    </button>
+                    <button
+                      className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-500 w-1/2"
+                      onClick={() => {
+                        dispatch(captureMaster());
+                      }}
+                    >
+                      Capture
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <button
+                className="bg-teal-600 text-white py-2 px-6 rounded hover:bg-teal-500 mt-6 w-1/2"
+                onClick={() => {
+                  const formData = new FormData();
+                  Object.entries(createMeter).forEach(([key, value]) => {
+                    formData.append(key, value);
+                  });
+                  dispatch(addMeter(formData));
+                  dispatch(resetMasterImage());
+                  setActiveTab('get');
+                  resetform();
+                }}
+              >
+                Add Meter
+              </button>
             </div>
           </div>
         )}
         {
           activeTab == 'update' && (
             <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-              <div className="bg-white p-6 rounded shadow-lg relative w-2/3">
+              <div className="bg-gray-800 p-8 rounded shadow-lg relative w-3/4 max-w-4xl">
                 <button
-                  className="absolute bg-white top-2 right-2 text-gray-700 hover:text-gray-500"
+                  className="absolute top-2 right-2 text-white"
                   onClick={() => setActiveTab('get')}
                 >
                   ✕
                 </button>
-                <h2 className="text-xl text-gray-700 font-semibold mb-4">Update Meter</h2>
-                <div className="grid grid-cols-2 gap-4">
-                  {Object.entries(updateMeter).map(([key, value]) => {
-                    return (
-                      <div key={key}>
-                        {(key === 'photo') && (
-                          <>
-                            <label className="flex justify-start text-md font-semibold text-gray-800" htmlFor={key}>
-                              Meter Photos
-                            </label>
-                            {key === 'photo' && (
-                              <img src={value} alt={updateMeter.model} className="w-1/2" />
-                            )}
-                          </>
-                        )}
-                        <input
-                          style={{ backgroundColor: '#1F2937', color: 'white' }}
-                          className="border border-gray-300 rounded p-2 mb-2 w-full"
-                          name={key}
-                          type={key === 'photo' ? 'file' : 'text'}
-                          placeholder={`Meter ${key}`}
-                          defaultValue={key === 'photo' ? undefined : value}
-                          accept={(key === 'photo') ? 'image/*' : undefined}
-                          onChange={handleUpdate}
-                        />
-                      </div>
-                    );
-                  })}
+                <h2 className="text-2xl text-white font-semibold mb-6">Update Meter</h2>
+                <div className="flex justify-between gap-8">
+                  <div className='flex flex-col gap-4 w-1/2'>
+                    {Object.entries(updateMeter).map(([key, value]) => {
+                      if (key === 'photo') return null;
+                      return (
+                        <div key={key}>
+                          <label className="block text-md font-semibold text-gray-800 mb-2" htmlFor={key}>
+                            Meter {key.charAt(0).toUpperCase() + key.slice(1)}
+                          </label>
+                          <input
+                            style={{ backgroundColor: '#1F2937', color: 'white' }}
+                            className="border rounded p-2 w-full text-white"
+                            name={key}
+                            type="text"
+                            placeholder={`Meter ${key}`}
+                            value={value}
+                            onChange={handleUpdate}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="flex flex-col items-center w-1/2">
+                    <img
+                      src={'http://localhost:3000/video_feed'}
+                      alt="Meter Preview"
+                      className="w-full h-auto mb-4 rounded-lg"
+                    />
+                    <div className="flex space-x-4 w-full justify-between">
+                      <button
+                        className="bg-yellow-600 text-white py-2 px-4 rounded hover:bg-yellow-500 w-1/2"
+                        onClick={() => {
+                          setUpdateMeter({ ...updateMeter, photo: null });
+                          dispatch(resetMasterImage());
+                        }}
+                      >
+                        Retry
+                      </button>
+                      <button
+                        className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-500 w-1/2"
+                        onClick={() => {
+                          dispatch(captureMaster());
+                        }}
+                      >
+                        Capture
+                      </button>
+                    </div>
+                  </div>
                 </div>
-
-
-                <button className="bg-teal-600 text-white py-2 rounded hover:bg-teal-500"
+                <button
+                  className="bg-teal-600 text-white py-2 px-6 rounded hover:bg-teal-500 mt-6 w-1/2"
                   onClick={() => {
                     const formData = new FormData();
                     Object.entries(updateMeter).forEach(([key, value]) => {
-                      if (value === null || value === '') return;
-                      if (value !== selectedMeter[key]) {
-                        if (key === 'photo') {
-                          formData.append(key, value);
-                        } else {
-                          formData.append(key, value);
-                        }
-                      }
-                    })
+                      formData.append(key, value);
+                    });
                     dispatch(updateExistMeter({ id: selectedMeter.id, meter: formData }));
+                    dispatch(resetMasterImage());
                     setActiveTab('get');
                     resetform();
-                  }}>Update Meter</button>
+                  }}
+                >
+                  Update Meter
+                </button>
               </div>
             </div>)
         }

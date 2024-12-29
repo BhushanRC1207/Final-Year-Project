@@ -32,10 +32,9 @@ def handlePagination(DB):
 
 
 def createMultimeter(DB, multimeter):
-    cover_image = request.files.get("photo")
+    cover_image = request.json["photo"]
     if not cover_image:
-        raise (Exception("Please provide cover image and screen photos!"))
-    cover_image = upload_image(cover_image)
+        raise (Exception("Please provide image!"))
     multimeter["photo"] = cover_image
     multimeter = CreateMultimeterDTO(**multimeter)
     DB.insert_one(multimeter.dict())
@@ -106,9 +105,9 @@ def updateMultimeter(DB, updated_data, id):
     existing_multimeter = DB.find_one({"_id": id})
     if not existing_multimeter:
         raise (Exception("Multimeter not found!"))
-    photo = request.files.get("photo")
+    photo = request.json["photo"]
     if photo:
-        updated_data["photo"] = upload_image(photo)
+        updated_data["photo"] = photo
     updated_data = UpdateMultimeterDTO(**updated_data)
     updated_data_dict = updated_data.dict(exclude_unset=True)
     updated_data_dict["updated_at"] = datetime.now()

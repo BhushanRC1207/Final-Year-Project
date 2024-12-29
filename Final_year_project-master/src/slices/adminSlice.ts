@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axiosInstance from '../api/axiosInstance';
+import axios from 'axios';
 
 interface AdminState {
     workers: any[];
@@ -8,6 +9,7 @@ interface AdminState {
     routines: any[];
     loading: boolean;
     error: string | null;
+    masterImage: string | null;
     meta?: {
         page: number;
         limit: number;
@@ -22,6 +24,7 @@ const initialState: AdminState = {
     routines: [],
     loading: false,
     error: null,
+    masterImage: null,
     meta: {
         page: 1,
         limit: 10,
@@ -174,9 +177,9 @@ export const getMeters = createAsyncThunk('admin/getMeters', async (params, { re
 export const addMeter = createAsyncThunk('admin/addMeter', async (meter, { rejectWithValue }) => {
     try {
         const response = await axiosInstance.post(`/multimeter`, meter, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
+            'headers': {
+                'Content-Type': 'application/json',
+            }
         });
         return response.data;
     } catch (error: any) {
@@ -192,7 +195,7 @@ export const updateExistMeter = createAsyncThunk('admin/updateMeter', async ({ i
     try {
         const response = await axiosInstance.put(`/multimeter/${id}`, meter, {
             headers: {
-                'Content-Type': 'multipart/form-data',
+                'Content-Type': 'application/json',
             },
         });
         return response.data;
@@ -236,11 +239,30 @@ export const sendEmail = createAsyncThunk(
     }
 );
 
+export const captureMaster = createAsyncThunk(
+    'admin/captureMaster',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await axios.post('http://localhost:3000/capture_master_image');
+            return response.data;
+        } catch (error: any) {
+            if (error.response && error.response.data) {
+                return rejectWithValue(error.response.data.error);
+            } else {
+                return rejectWithValue(error.message);
+            }
+        }
+    }
+);
 
 const adminSlice = createSlice({
     name: 'admin',
     initialState,
-    reducers: {},
+    reducers: {
+        resetMasterImage(state) {
+            state.masterImage = null;
+        }
+    },
     extraReducers: (builder) => {
         builder
             .addCase(fetchWorkers.pending, (state) => {
@@ -390,14 +412,27 @@ const adminSlice = createSlice({
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(sendEmail.fulfilled, (state, action: PayloadAction<any>) => {
+            .addCase(sendEmail.fulfilled, (state) => {
                 state.loading = false;
             })
             .addCase(sendEmail.rejected, (state, action: PayloadAction<any>) => {
                 state.loading = false;
                 state.error = action.payload;
             })
+            .addCase(captureMaster.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(captureMaster.fulfilled, (state, action: PayloadAction<any>) => {
+                state.loading = false;
+                state.masterImage = action.payload.image;
+            })
+            .addCase(captureMaster.rejected, (state, action: PayloadAction<any>) => {
+                state.loading = false;
+                state.error = action.payload;
+            });
     },
 });
 
+export const { resetMasterImage } = adminSlice.actions;
 export default adminSlice.reducer;
