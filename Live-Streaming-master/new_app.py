@@ -7,7 +7,7 @@ import os
 import base64
 from skimage.metrics import structural_similarity as ssim
 import time
-from pymodbus.client import ModbusSerialClient
+from pymodbus.client import ModbusSerialClient, ModbusTcpClient
 from pymodbus.exceptions import ModbusException
 import struct
 
@@ -432,6 +432,7 @@ def modbus_serial(
         int(SR_REGISTER_START) - 1,
         int(REGISTER_COUNT),
     )
+    print(data1,data2)
     if data1 is not None and data2 is not None:
 
         sr_add = str(int(registers_to_float(data2)))
@@ -462,6 +463,7 @@ def ethernet_serial(
         int(SR_REGISTER_START) - 1,
         int(REGISTER_COUNT),
     )
+    print(data1,data2)
     if data1 is not None and data2 is not None:
 
         sr_add = str(int(registers_to_float(data2)))
