@@ -36,7 +36,7 @@ const theme = createTheme({
             '& .MuiButtonBase-root': {
               color: 'white', // Customize pagination arrow color
             },
-          },  
+          },
         },
       },
     },
@@ -98,6 +98,13 @@ const modbusFields = [
 const ethernetFields = [
   'ip',
   'port',
+]
+
+const usbFields = [
+  'baud_rate',
+  'parity',
+  'stop_bits',
+  'byte_size',
 ]
 
 const nameTolabelMap = {
@@ -417,8 +424,9 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
                             onChange={handleInputChange}
                           >
                             <option value="">Select Protocol</option>
-                            <option value="modbus">Modbus/USB</option>
+                            <option value="modbus">Modbus</option>
                             <option value="ethernet">Ethernet</option>
+                            <option value="usb">USB</option>
                           </select>
                         </div>
                       );
@@ -496,6 +504,28 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
                       ))}
                     </>
                   )}
+                  {
+                    createMeter.com_protocol === "usb" && (
+                      <>
+                        {usbFields.map((key) => (
+                          <div key={key}>
+                            <label className="block text-md font-semibold text-white mb-2 float-left" htmlFor={key}>
+                              {nameTolabelMap[key]}
+                            </label>
+                            <input
+                              style={{ backgroundColor: '#1F2937', color: 'white' }}
+                              className="border rounded p-2 w-full text-white"
+                              name={key}
+                              type="text"
+                              placeholder={`${nameTolabelMap[key]}`}
+                              value={createMeter.com_configure[key]}
+                              onChange={handleComConfigure}
+                            />
+                          </div>
+                        ))}
+                      </>
+                    )
+                  }
                 </div>
 
                 <div className="flex flex-col items-center w-1/2">
@@ -583,8 +613,9 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
                               onChange={handleUpdate}
                             >
                               <option value="">Select Protocol</option>
-                              <option value="modbus">Modbus/USB</option>
+                              <option value="modbus">Modbus</option>
                               <option value="ethernet">Ethernet</option>
+                              <option value="usb">USB</option>
                             </select>
                           </div>
                         );
@@ -645,6 +676,26 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
                     {updateMeter.com_protocol === 'ethernet' && (
                       <>
                         {ethernetFields.map((key) => (
+                          <div key={key}>
+                            <label className="block text-md font-semibold text-white mb-2 float-left" htmlFor={key}>
+                              {nameTolabelMap[key]}
+                            </label>
+                            <input
+                              style={{ backgroundColor: '#1F2937', color: 'white' }}
+                              className="border rounded p-2 w-full text-white"
+                              name={key}
+                              type="text"
+                              placeholder={`${nameTolabelMap[key]}`}
+                              value={updateMeter.com_configure[key]}
+                              onChange={updateComConfigure}
+                            />
+                          </div>
+                        ))}
+                      </>
+                    )}
+                    {updateMeter.com_protocol === 'usb' && (
+                      <>
+                        {usbFields.map((key) => (
                           <div key={key}>
                             <label className="block text-md font-semibold text-white mb-2 float-left" htmlFor={key}>
                               {nameTolabelMap[key]}

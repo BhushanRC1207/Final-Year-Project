@@ -618,7 +618,7 @@ def get_serial_no():
             PARITY = request.json["com_configure"]["parity"]
             STOPBITS = request.json["com_configure"]["stop_bits"]
             BYTESIZE = request.json["com_configure"]["byte_size"]
-            serial_no = modbus_usb(
+            serial_no = modbus_serial(
                 SERIAL_PORT,
                 BAUDRATE,
                 PARITY,
@@ -630,17 +630,35 @@ def get_serial_no():
                 REGISTER_COUNT,
             )
             return jsonify({"serial_no": serial_no})
-        IP = request.json["com_configure"]["ip"]
-        PORT = request.json["com_configure"]["port"]
-        serial_no = ethernet_serial(
-            IP,
-            PORT,
-            SLAVE_ID,
-            DATE_REGISTER_START,
-            SR_REGISTER_START,
-            REGISTER_COUNT,
-        )
-        return jsonify({"serial_no": serial_no})
+        elif COMM_PROTOCOL == "ethernet":
+            IP = request.json["com_configure"]["ip"]
+            PORT = request.json["com_configure"]["port"]
+            serial_no = ethernet_serial(
+                IP,
+                PORT,
+                SLAVE_ID,
+                DATE_REGISTER_START,
+                SR_REGISTER_START,
+                REGISTER_COUNT,
+            )
+            return jsonify({"serial_no": serial_no})
+        elif COMM_PROTOCOL == "usb":
+            SERIAL_PORT = request.json["com_configure"]["serial_port"]
+            BAUDRATE = request.json["com_configure"]["baud_rate"]
+            PARITY = request.json["com_configure"]["parity"]
+            STOPBITS = request.json["com_configure"]["stop_bits"]
+            BYTESIZE = request.json["com_configure"]["byte_size"]
+            serial_no = modbus_usb(
+                BAUDRATE,
+                PARITY,
+                STOPBITS,
+                BYTESIZE,
+                SLAVE_ID,
+                DATE_REGISTER_START,
+                SR_REGISTER_START,
+                REGISTER_COUNT,
+            )
+            return jsonify({"serial_no": serial_no})
 
     except SerialError as e:
         app.logger.error(f"Unexpected error: {str(e)}")
