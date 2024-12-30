@@ -10,6 +10,7 @@ import time
 from pymodbus.client import ModbusSerialClient, ModbusTcpClient
 from pymodbus.exceptions import ModbusException
 import struct
+import serial.tools.list_ports
 
 
 class CameraError(Exception):
@@ -66,7 +67,7 @@ rectAOI = ueye.IS_RECT()
 
 ret = ueye.is_InitCamera(hCam, None)
 if ret != ueye.IS_SUCCESS:
-    raise Exception(f"Camera initialization failed with error code: {ret}")
+    """raise Exception(f"Camera initialization failed with error code: {ret}")"""
 
 # Get camera information
 ueye.is_GetCameraInfo(hCam, cInfo)
@@ -432,7 +433,7 @@ def modbus_serial(
         int(SR_REGISTER_START) - 1,
         int(REGISTER_COUNT),
     )
-    print(data1,data2)
+    print(data1, data2)
     if data1 is not None and data2 is not None:
 
         sr_add = str(int(registers_to_float(data2)))
@@ -463,13 +464,59 @@ def ethernet_serial(
         int(SR_REGISTER_START) - 1,
         int(REGISTER_COUNT),
     )
-    print(data1,data2)
+    print(data1, data2)
     if data1 is not None and data2 is not None:
 
         sr_add = str(int(registers_to_float(data2)))
         return str(int(registers_to_float(data1))) + "0" * (6 - len(sr_add)) + sr_add
     else:
         return "Error while reading"
+
+
+def get_serial_ports():
+    return [port.device for port in serial.tools.list_ports.comports()]
+
+
+def modbus_usb(
+    BAUDRATE,
+    PARITY,
+    STOPBITS,
+    BYTESIZE,
+    SLAVE_ID,
+    DATE_REGISTER_START,
+    SR_REGISTER_START,
+    REGISTER_COUNT,
+):
+    ports = get_serial_ports()
+    print(ports)
+    for SERIAL_PORT in ports[::-1]:
+        data1 = read_modbus_rtu(
+            str(SERIAL_PORT),
+            int(BAUDRATE),
+            str(PARITY),
+            int(STOPBITS),
+            int(BYTESIZE),
+            int(SLAVE_ID),
+            int(DATE_REGISTER_START) - 1,
+            int(REGISTER_COUNT),
+        )
+        data2 = read_modbus_rtu(
+            str(SERIAL_PORT),
+            int(BAUDRATE),
+            str(PARITY),
+            int(STOPBITS),
+            int(BYTESIZE),
+            int(SLAVE_ID),
+            int(SR_REGISTER_START) - 1,
+            int(REGISTER_COUNT),
+        )
+
+        if data1 is not None and data2 is not None:
+            sr_add = str(int(registers_to_float(data2)))
+            return (
+                str(int(registers_to_float(data1))) + "0" * (6 - len(sr_add)) + sr_add
+            )
+    return "Communication Error"
 
 
 @app.route("/")
@@ -571,7 +618,7 @@ def get_serial_no():
             PARITY = request.json["com_configure"]["parity"]
             STOPBITS = request.json["com_configure"]["stop_bits"]
             BYTESIZE = request.json["com_configure"]["byte_size"]
-            serial_no = modbus_serial(
+            serial_no = modbus_usb(
                 SERIAL_PORT,
                 BAUDRATE,
                 PARITY,
@@ -583,18 +630,17 @@ def get_serial_no():
                 REGISTER_COUNT,
             )
             return jsonify({"serial_no": serial_no})
-        else:
-            IP = request.json["com_configure"]["ip"]
-            PORT = request.json["com_configure"]["port"]
-            serial_no = ethernet_serial(
-                IP,
-                PORT,
-                SLAVE_ID,
-                DATE_REGISTER_START,
-                SR_REGISTER_START,
-                REGISTER_COUNT,
-            )
-            return jsonify({"serial_no": serial_no})
+        IP = request.json["com_configure"]["ip"]
+        PORT = request.json["com_configure"]["port"]
+        serial_no = ethernet_serial(
+            IP,
+            PORT,
+            SLAVE_ID,
+            DATE_REGISTER_START,
+            SR_REGISTER_START,
+            REGISTER_COUNT,
+        )
+        return jsonify({"serial_no": serial_no})
 
     except SerialError as e:
         app.logger.error(f"Unexpected error: {str(e)}")
