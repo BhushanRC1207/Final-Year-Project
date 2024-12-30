@@ -28,7 +28,6 @@ class SerialError(Exception):
     pass
 
 
-
 app = Flask(__name__)
 
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -368,6 +367,40 @@ def read_modbus_rtu(
         # print("Connection closed.")
 
 
+def read_modbus_tcp(ip, port, slave_id, register_start, register_count):
+    """Read Modbus registers via TCP."""
+    print(f"Connecting to Modbus TCP device at {ip}:{port} (Slave ID: {slave_id})...")
+    client = ModbusTcpClient(host=ip, port=port, timeout=1)
+
+    if not client.connect():
+        print("Failed to connect to Modbus TCP device.")
+        return None
+
+    try:
+        print("Connected. Reading registers...")
+        response = client.read_holding_registers(
+            address=register_start, count=register_count, slave=slave_id
+        )
+
+        if response.isError():
+            print(f"Error reading registers: {response}")
+            return None
+
+        return response.registers
+
+    except ModbusException as e:
+        print(f"Modbus Exception occurred: {e}")
+        return None
+
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return None
+
+    finally:
+        client.close()
+        print("Connection closed.")
+
+
 def modbus_serial(
     SERIAL_PORT,
     BAUDRATE,
@@ -395,6 +428,36 @@ def modbus_serial(
         str(PARITY),
         int(STOPBITS),
         int(BYTESIZE),
+        int(SLAVE_ID),
+        int(SR_REGISTER_START) - 1,
+        int(REGISTER_COUNT),
+    )
+    if data1 is not None and data2 is not None:
+
+        sr_add = str(int(registers_to_float(data2)))
+        return str(int(registers_to_float(data1))) + "0" * (6 - len(sr_add)) + sr_add
+    else:
+        return "Error while reading"
+
+
+def ethernet_serial(
+    IP,
+    PORT,
+    SLAVE_ID,
+    DATE_REGISTER_START,
+    SR_REGISTER_START,
+    REGISTER_COUNT,
+):
+    data1 = read_modbus_tcp(
+        str(IP),
+        int(PORT),
+        int(SLAVE_ID),
+        int(DATE_REGISTER_START) - 1,
+        int(REGISTER_COUNT),
+    )
+    data2 = read_modbus_tcp(
+        str(IP),
+        int(PORT),
         int(SLAVE_ID),
         int(SR_REGISTER_START) - 1,
         int(REGISTER_COUNT),
@@ -496,28 +559,41 @@ def capture_master_image():
 def get_serial_no():
     try:
         COMM_PROTOCOL = request.json["com_protocol"]
-        SERIAL_PORT = request.json["com_configure"]["serial_port"]
-        BAUDRATE = request.json["com_configure"]["baud_rate"]
-        PARITY = request.json["com_configure"]["parity"]
-        STOPBITS = request.json["com_configure"]["stop_bits"]
-        BYTESIZE = request.json["com_configure"]["byte_size"]
         SLAVE_ID = request.json["com_configure"]["slave_id"]
         DATE_REGISTER_START = request.json["com_configure"]["date_register"]
         SR_REGISTER_START = request.json["com_configure"]["serial_no_register"]
         REGISTER_COUNT = request.json["com_configure"]["register_count"]
-        print("This much")
-        serial_no = modbus_serial(
-            SERIAL_PORT,
-            BAUDRATE,
-            PARITY,
-            STOPBITS,
-            BYTESIZE,
-            SLAVE_ID,
-            DATE_REGISTER_START,
-            SR_REGISTER_START,
-            REGISTER_COUNT,
-        )
-        return jsonify({"serial_no": serial_no})
+        if COMM_PROTOCOL == "modbus":
+            SERIAL_PORT = request.json["com_configure"]["serial_port"]
+            BAUDRATE = request.json["com_configure"]["baud_rate"]
+            PARITY = request.json["com_configure"]["parity"]
+            STOPBITS = request.json["com_configure"]["stop_bits"]
+            BYTESIZE = request.json["com_configure"]["byte_size"]
+            serial_no = modbus_serial(
+                SERIAL_PORT,
+                BAUDRATE,
+                PARITY,
+                STOPBITS,
+                BYTESIZE,
+                SLAVE_ID,
+                DATE_REGISTER_START,
+                SR_REGISTER_START,
+                REGISTER_COUNT,
+            )
+            return jsonify({"serial_no": serial_no})
+        else:
+            IP = request.json["com_configure"]["ip"]
+            PORT = request.json["com_configure"]["port"]
+            serial_no = ethernet_serial(
+                IP,
+                PORT,
+                SLAVE_ID,
+                DATE_REGISTER_START,
+                SR_REGISTER_START,
+                REGISTER_COUNT,
+            )
+            return jsonify({"serial_no": serial_no})
+
     except SerialError as e:
         app.logger.error(f"Unexpected error: {str(e)}")
         raise Exception("Serial Error")
