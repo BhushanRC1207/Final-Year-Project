@@ -310,13 +310,34 @@ def save_in_directory(root_dir, subdir, images, names):
         if not os.path.exists(subdir_path):
             os.makedirs(subdir_path)
 
-        # Save images with provided names
         for image, name in zip(images, names):
-            image_path = os.path.join(subdir_path, name)
-            cv2.imwrite(image_path, image)
+            try:
+                header, encoded = image.split(",", 1)
+                
+                # Extract the image extension from the data URL header
+                if "image/" in header:
+                    ext = header.split("/")[1].split(";")[0]
+                    if ext == "jpeg":
+                        ext = "jpg"
+                    name = f"{name}.{ext}"
+                else:
+                    raise ValueError(f"Invalid data URL header for image: {name}")
+                
+                image_data = base64.b64decode(encoded)
+                image = cv2.imdecode(np.frombuffer(image_data, np.uint8), cv2.IMREAD_COLOR)
+                
+                image_path = os.path.join(subdir_path, name)
+                
+                # Save the image
+                if not cv2.imwrite(image_path, image):
+                    raise IOError(f"Failed to write image to {image_path}")
+            except Exception as e:
+                print(e)
+                raise Exception(f"Failed to save image {name}: {str(e)}")
 
-        return
+        return 
     except Exception as e:
+        print(e)
         raise Exception(f"Failed to save images: {str(e)}")
 
 
@@ -487,6 +508,8 @@ def modbus_usb(
     SR_REGISTER_START,
     REGISTER_COUNT,
 ):
+    print("in usb----->")
+    
     ports = get_serial_ports()
     print(ports)
     for SERIAL_PORT in ports[::-1]:
@@ -643,7 +666,8 @@ def get_serial_no():
             )
             return jsonify({"serial_no": serial_no})
         elif COMM_PROTOCOL == "usb":
-            SERIAL_PORT = request.json["com_configure"]["serial_port"]
+            print("usb----->")
+
             BAUDRATE = request.json["com_configure"]["baud_rate"]
             PARITY = request.json["com_configure"]["parity"]
             STOPBITS = request.json["com_configure"]["stop_bits"]
@@ -672,6 +696,7 @@ def save_images():
         names = request.json["names"]
         model_type = request.json["model_type"]
         save_in_directory("D:/Rishabh_Images/", model_type, images, names)
+        return jsonify({'message':"Images Saved Successfully!"})
     except:
         raise Exception("Save Image Error!")
 

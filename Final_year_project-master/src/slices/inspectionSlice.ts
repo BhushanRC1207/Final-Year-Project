@@ -177,6 +177,22 @@ export const getSerialNumber = createAsyncThunk(
     }
 )
 
+export const saveImages = createAsyncThunk(
+    'inpsections/saveImages',
+    async (data, { rejectWithValue }) => {
+        try {
+            const response = await axios.post(`http://localhost:3000/saveImages`, data);
+            return response.data;
+        } catch (error: any) {
+            if (error.response && error.response.data) {
+                return rejectWithValue(error.response.data.error);
+            } else {
+                return rejectWithValue(error.message);
+            }
+        }
+    }
+)
+
 const inspectionSlice = createSlice({
     name: 'inspection',
     initialState,
@@ -296,5 +312,5 @@ const inspectionSlice = createSlice({
     },
 });
 
-export const { resetInspectionStatus, clearErrors, changeCapture, changeMasterImage, changeDiff, resetod,changeSerialNumber } = inspectionSlice.actions;
+export const { resetInspectionStatus, clearErrors, changeCapture, changeMasterImage, changeDiff, resetod, changeSerialNumber } = inspectionSlice.actions;
 export default inspectionSlice.reducer;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { checkMeter, createInspection, getMeters, resetInspectionStatus, changeCapture, changeMasterImage, changeDiff, resetod, getSerialNumber, changeSerialNumber } from '../slices/inspectionSlice';
+import { checkMeter, createInspection, getMeters, resetInspectionStatus, changeCapture, changeMasterImage, changeDiff, resetod, getSerialNumber, changeSerialNumber, saveImages } from '../slices/inspectionSlice';
 import useErrorNotifier from '../hooks/useErrorNotifier';
 import { set } from 'react-datepicker/dist/date_utils';
 
@@ -63,6 +63,11 @@ const Checkpoints: React.FC = () => {
     };
 
     const handleContinue = () => {
+        dispatch(saveImages({
+            images: [capturedImage, diffImage],
+            names: [serial_no, serial_no],
+            model_type: currentMeter.model
+        }))
         dispatch(createInspection({
             ...inspectionForm,
             serial_no: serial_no,
@@ -81,6 +86,11 @@ const Checkpoints: React.FC = () => {
     };
 
     const handleSubmit = () => {
+        dispatch(saveImages({
+            images: [capturedImage, diffImage],
+            names: [serial_no, serial_no],
+            model_type: currentMeter.model
+        }))
         dispatch(createInspection({
             ...inspectionForm,
             serial_no: serial_no,
