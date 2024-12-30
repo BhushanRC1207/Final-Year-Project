@@ -23,17 +23,17 @@ const AdminDashboard: React.FC = () => {
       case 'RoutineCrud':
         return <RoutineCrud tab={'get'} />;
       case 'Email':
-        return <Email/>
+        return <Email />
       default:
         return <WorkerCrud tab={'get'} />;
     }
   };
   useErrorNotifier({ stateName: 'admin' });
   return (
-    <div className="flex h-screen w-screen mt-20">
+    <div className="flex h-screen w-screen mt-20 overflow-hidden">
       <AdminSideBar selectedComponent={selectedComponent} setSelectedComponent={setSelectedComponent} />
 
-      <div className="flex-grow p-6 ml-60 scroll_none" >
+      <div className="flex-grow p-6 ml-60 overflow-auto" >
         {renderComponent()}
       </div>
     </div>

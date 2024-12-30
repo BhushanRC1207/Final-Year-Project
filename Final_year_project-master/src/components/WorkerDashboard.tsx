@@ -38,7 +38,7 @@ const WorkerDashboard = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-900 flex flex-1 flex-col w-full mt-20 ">
+      <div className="min-h-screen bg-gray-900 flex flex-1 flex-col w-full mt-20">
         <div className="grid grid-cols-12 gap-4 p-6 w-full">
           <div className="col-span-12 lg:col-span-8 space-y-4 w-full">
             <div className="col-span-12 lg:col-span-8 w-full">
