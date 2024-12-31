@@ -36,7 +36,7 @@ const theme = createTheme({
             '& .MuiButtonBase-root': {
               color: 'white', // Customize pagination arrow color
             },
-          },  
+          },
         },
       },
     },
@@ -187,7 +187,7 @@ const WorkerCrud: React.FC<WorkerCrudProps> = ({ tab }) => {
       resizable: false,
     },
     { field: 'name', headerName: 'Name', flex: 1, resizable: false, headerAlign: 'center', },
-    { field: 'reg_no', headerName: 'Registration No', flex: 1, resizable: false, headerAlign: 'center', },
+    { field: 'reg_no', headerName: 'Employee ID', flex: 1, resizable: false, headerAlign: 'center', },
     {
       field: 'user_role', headerName: 'User Role', flex: 1, resizable: false, headerAlign: 'center', renderCell: (params) => (
         <span>{params.value.charAt(0).toUpperCase() + params.value.slice(1).toLowerCase()}</span>

@@ -65,7 +65,7 @@ const Checkpoints: React.FC = () => {
     const handleContinue = () => {
         dispatch(saveImages({
             images: [capturedImage, diffImage],
-            names: [serial_no, serial_no],
+            names: [serial_no, serial_no + "_diff"],
             model_type: currentMeter.model
         }))
         dispatch(createInspection({
@@ -88,7 +88,7 @@ const Checkpoints: React.FC = () => {
     const handleSubmit = () => {
         dispatch(saveImages({
             images: [capturedImage, diffImage],
-            names: [serial_no, serial_no],
+            names: [serial_no, serial_no + "_diff"],
             model_type: currentMeter.model
         }))
         dispatch(createInspection({

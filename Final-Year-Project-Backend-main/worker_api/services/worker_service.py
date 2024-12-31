@@ -109,9 +109,9 @@ def createWorker(DB, worker):
 
 """ Get Logged In Worker """
 
-
+ 
 def loggedInWorker(DB):
-    access_token = request.cookies.get("access_token")
+    access_token = request.cookies.get("access_token") or request.headers.get("Authorization").split(" ")[1]
     if not access_token:
         raise Exception("No access token found!")
     try:
@@ -315,7 +315,7 @@ def refreshAccessToken(DB):
 
 
 def logoutUser(DB):
-    access_token = request.cookies.get("access_token")
+    access_token = request.cookies.get("access_token") or request.headers.get("Authorization").split(" ")[1]
     try:
         decoded_token = jwt.decode(
             access_token, os.getenv("JWT_SECRET_KEY"), algorithms=["HS256"]

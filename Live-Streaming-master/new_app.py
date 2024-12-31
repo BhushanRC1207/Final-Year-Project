@@ -11,6 +11,7 @@ from pymodbus.client import ModbusSerialClient, ModbusTcpClient
 from pymodbus.exceptions import ModbusException
 import struct
 import serial.tools.list_ports
+import time
 
 
 class CameraError(Exception):
@@ -654,6 +655,7 @@ def get_serial_no():
             )
             return jsonify({"serial_no": serial_no})
         elif COMM_PROTOCOL == "ethernet":
+            time.sleep(5)
             IP = request.json["com_configure"]["ip"]
             PORT = request.json["com_configure"]["port"]
             serial_no = ethernet_serial(
@@ -666,12 +668,11 @@ def get_serial_no():
             )
             return jsonify({"serial_no": serial_no})
         elif COMM_PROTOCOL == "usb":
-            print("usb----->")
-
             BAUDRATE = request.json["com_configure"]["baud_rate"]
             PARITY = request.json["com_configure"]["parity"]
             STOPBITS = request.json["com_configure"]["stop_bits"]
             BYTESIZE = request.json["com_configure"]["byte_size"]
+
             serial_no = modbus_usb(
                 BAUDRATE,
                 PARITY,
@@ -686,7 +687,7 @@ def get_serial_no():
 
     except SerialError as e:
         app.logger.error(f"Unexpected error: {str(e)}")
-        raise Exception("Serial Error")
+        raise
 
 
 @app.route("/saveImages", methods=["POST"])
