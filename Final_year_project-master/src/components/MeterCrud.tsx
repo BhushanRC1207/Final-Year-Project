@@ -276,7 +276,7 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
   }, [masterImage]);
 
   const columns: GridColDef[] = [
-    { field: 'model', headerName: 'Model', width: 100, headerAlign: 'center', align: 'center' },
+    { field: 'model', headerName: 'Model', flex: 1, headerAlign: 'center', align: 'center' },
     {
       field: 'photo',
       headerName: 'Photo',
@@ -333,7 +333,7 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
                   }
                 });
               }
-              else {
+              else if (prot == "ethernet") {
                 setUpdateMeter({
                   model: params.row.model,
                   description: params.row.description,
@@ -347,6 +347,24 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
                     ip: params.row.com_configure.ip,
                     port: params.row.com_configure.port
 
+                  }
+                });
+              }
+              else {
+                setUpdateMeter({
+                  model: params.row.model,
+                  description: params.row.description,
+                  photo: params.row.photo,
+                  com_protocol: params.row.com_protocol,
+                  com_configure: {
+                    slave_id: params.row.com_configure.slave_id,
+                    register_count: params.row.com_configure.register_count,
+                    serial_no_register: params.row.com_configure.serial_no_register,
+                    date_register: params.row.com_configure.date_register,
+                    baud_rate: params.row.com_configure.baud_rate,
+                    parity: params.row.com_configure.parity,
+                    stop_bits: params.row.com_configure.stop_bits,
+                    byte_size: params.row.com_configure.byte_size,
                   }
                 });
               }
