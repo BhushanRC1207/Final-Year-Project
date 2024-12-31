@@ -40,7 +40,7 @@ const Navbar: React.FC = () => {
                                 />
                                 <div className="flex flex-col items-start space-y-1">
                                     <p className="text-white font-semibold">{userData?.name}</p>
-                                    <p className="text-gray-300 text-sm">Reg. No.: {userData?.reg_no}</p>
+                                    <p className="text-gray-300 text-sm">Employee ID: {userData?.reg_no}</p>
                                 </div>
 
                                 <button

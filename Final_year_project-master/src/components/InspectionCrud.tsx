@@ -15,18 +15,29 @@ const theme = createTheme({
             styleOverrides: {
                 root: {
                     '& .MuiDataGrid-cell': {
-                        color: 'white',
-                        backgroundColor: '#1F2937',
+                        color: 'white', // Customize cell text color
+                        backgroundColor: '#1F2937', // Customize cell background color
                         borderColor: "white",
                         borderWidth: 0.5,
                     },
                     '& .MuiDataGrid-columnHeaders': {
-                        backgroundColor: '#111828',
-                        color: 'black',
+                        backgroundColor: '#111828', // Customize column header background color
+                        color: 'black', // Customize column header text color
                     },
                     '& .MuiDataGrid-footerContainer': {
-                        backgroundColor: '#1F2937',
-                        color: 'white',
+                        backgroundColor: '#1F2937', // Customize footer background color
+                        color: 'white', // Customize footer text color
+                    },
+                    '& .MuiTablePagination-root': {
+                        color: 'white', // Customize pagination text color
+                    },
+                    '& .MuiTablePagination-selectIcon': {
+                        color: 'white', // Customize pagination select icon color
+                    },
+                    '& .MuiTablePagination-actions': {
+                        '& .MuiButtonBase-root': {
+                            color: 'white', // Customize pagination arrow color
+                        },
                     },
                 },
             },
@@ -153,7 +164,6 @@ const InspectionCrud: React.FC<InspectionCrudProps> = ({ tab }) => {
             resizable: false,
             align: 'center',
         },
-        { field: 'client', headerName: 'Client', flex: 1, resizable: false, headerAlign: 'center', align: 'center', },
         {
             field: 'date', headerName: 'Date', flex: 1, resizable: false, headerAlign: 'center', align: 'center',
             renderCell: (params) => (
@@ -178,7 +188,7 @@ const InspectionCrud: React.FC<InspectionCrudProps> = ({ tab }) => {
         },
         { field: 'meter_model', headerName: 'Model', flex: 1, resizable: false, headerAlign: 'center', align: 'center' },
         { field: 'worker_name', headerName: 'Worker Name', flex: 1, resizable: false, headerAlign: 'center', align: 'center', },
-        { field: 'worker_reg_no', headerName: 'Worker Reg_no', flex: 1, resizable: false, headerAlign: 'center', align: 'center', },
+        { field: 'worker_reg_no', headerName: 'Worker ID', flex: 1, resizable: false, headerAlign: 'center', align: 'center', },
         {
             field: 'status',
             headerName: 'Result',

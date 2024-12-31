@@ -27,8 +27,16 @@ const theme = createTheme({
                         backgroundColor: '#1F2937', // Customize footer background color
                         color: 'white', // Customize footer text color
                     },
-                    '& .MuiCheckbox-root': {
-                        color: 'white !important', // Customize checkbox color
+                    '& .MuiTablePagination-root': {
+                        color: 'white', // Customize pagination text color
+                    },
+                    '& .MuiTablePagination-selectIcon': {
+                        color: 'white', // Customize pagination select icon color
+                    },
+                    '& .MuiTablePagination-actions': {
+                        '& .MuiButtonBase-root': {
+                            color: 'white', // Customize pagination arrow color
+                        },
                     },
                 },
             },

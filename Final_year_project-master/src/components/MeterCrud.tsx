@@ -276,14 +276,14 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
   }, [masterImage]);
 
   const columns: GridColDef[] = [
-    { field: 'model', headerName: 'Model', flex: 1, headerAlign: 'center', align: 'center' },
+    { field: 'model', headerName: 'Model Name', flex: 1, headerAlign: 'center', align: 'center' },
     {
       field: 'photo',
       headerName: 'Photo',
       width: 150,
       headerAlign: 'center', align: 'center',
       renderCell: (params) => (
-        <div className='flex justify-center items-center flex-1'>
+        <div className='flex justify-center items-center h-full'>
           <img src={params.value} alt={params.row.model} />
         </div>
       ),
@@ -302,7 +302,26 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
         </Tooltip>
       ),
     },
-
+    {
+      field: 'com_protocol',
+      headerName: 'Communication Protocol',
+      headerClassName: 'flex flex-wrap',
+      headerAlign: 'center',
+      width: 130,
+      align: 'center',
+      renderCell: (params) => (
+        <Tooltip title={params.value}>
+          <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {params.value.toUpperCase()}
+          </div>
+        </Tooltip>
+      ),
+      renderHeader: (params) => (
+        <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', textAlign: 'center' }}>
+          {params.colDef.headerName}
+        </div>
+      ),
+    },
     {
       field: 'actions',
       headerName: '',

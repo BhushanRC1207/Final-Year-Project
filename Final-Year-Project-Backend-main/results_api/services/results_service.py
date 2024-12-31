@@ -19,17 +19,27 @@ from email import encoders
 def handlePagination(DB):
     page = int(request.args.get("page", 1))
     limit = int(request.args.get("limit", 10))
+    
+    # Ensure page and limit are positive integers
+    if page < 1:
+        page = 1
+    if limit < 1:
+        limit = 10
+
     total = DB.count_documents({})
     total_pages = (total + limit - 1) // limit
+    
     if total_pages == 0:
         return [], 0, 0, 0
     if page > total_pages:
         page = total_pages
+
     data = DB.find({}).skip((page - 1) * limit).limit(limit)
     res = []
     for inspection in data:
         inspection["_id"] = str(inspection["_id"])
         res.append(inspection)
+    print(res,total,page,limit)
     return res, total, page, limit
 
 
@@ -145,6 +155,7 @@ def fetch_inspections(DB, worker_id):
     ]
 
     inspections = list(DB["Result"].aggregate(pipeline))
+    print(len(inspections))
     formatted = []
     for inspection in inspections:
         inspection["_id"] = str(inspection["_id"])
