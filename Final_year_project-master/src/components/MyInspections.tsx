@@ -9,7 +9,7 @@ import { addDays, startOfWeek, startOfMonth, endOfWeek, endOfMonth, format } fro
 import useErrorNotifier from '../hooks/useErrorNotifier';
 
 const columns: GridColDef[] = [
-    { field: 'serial_no', headerName: 'Serial No', width: 150, headerAlign: 'center', align: 'center' },
+    { field: 'serial_no', headerName: 'Serial No', width: 200, headerAlign: 'center', align: 'center' },
     { field: 'client', headerName: 'Client', flex: 1, headerAlign: 'center', align: 'center' },
     {
         field: 'date', headerName: 'Date', width: 150, headerAlign: 'center', align: 'center',
@@ -112,15 +112,15 @@ const MyInspections: React.FC = () => {
     }, [dispatch, searchField, searchValue, startDate, endDate, resultFilter, paginationModel]);
 
     return (
-        <div className='container mx-auto p-4 w-3/4 mt-20'>
-            <div className='flex justify-between items-center mb-4 gap-5 p-2'>
+        <div className='p-6 w-full mt-20 bg-gray-900 text-white'>
+            <div className='flex justify-between items-center mb-4 gap-5 py-2'>
                 {searchField !== 'date' ? (
                     <input
                         type='text'
                         value={searchValue}
                         onChange={handleSearchValueChange}
                         placeholder={`Search by ${searchField.replace('_', ' ')}`}
-                        className='p-2 rounded-md flex-1 bg-gray-800 text-white ml-2'
+                        className='p-2 rounded-md flex-1 bg-gray-800 text-white'
                     />
                 ) : (
                     <div className='flex gap-2 justify-around items-center px-4'>

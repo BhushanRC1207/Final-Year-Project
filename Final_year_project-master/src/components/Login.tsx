@@ -28,7 +28,7 @@ const Login: React.FC = () => {
     };
     useErrorNotifier({ stateName: 'user' });
     return (
-        <div className="flex min-h-screen flex-col justify-center items-center bg-gray-900">
+        <div className="w-full flex min-h-screen flex-col justify-center items-center bg-gray-900">
             <div className="sm:mx-auto sm:w-full sm:max-w-sm ">
                 <h2 className="mt-5 text-center text-2xl font-bold leading-9 tracking-tight text-white">
                     Login 
@@ -49,7 +49,7 @@ const Login: React.FC = () => {
                                 type="text"
                                 required
                                 autoComplete="worker_id"
-                                className="block w-full rounded-md border-0 py-1.5 px-2 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-white focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                className="block w-full rounded-md border-0 py-1.5 px-2 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-white focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 bg-black"
                             />
                         </div>
                     </div>
@@ -68,7 +68,7 @@ const Login: React.FC = () => {
                                 type={showPassword ? 'text' : 'password'}
                                 required
                                 autoComplete="current-password"
-                                className="block w-full rounded-md border-0 py-1.5 pr-10 pl-2 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-white focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                className="block w-full rounded-md border-0 py-1.5 pr-10 pl-2 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-white focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 bg-black"
                             />
 
                             <svg

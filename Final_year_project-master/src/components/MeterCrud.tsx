@@ -276,15 +276,15 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
   }, [masterImage]);
 
   const columns: GridColDef[] = [
-    { field: 'model', headerName: 'Model Name', flex: 1, headerAlign: 'center', align: 'center' },
+    { field: 'model', headerName: 'Model Name', width: 200, headerAlign: 'center', align: 'center' },
     {
       field: 'photo',
       headerName: 'Photo',
-      width: 150,
+      flex: 1,
       headerAlign: 'center', align: 'center',
       renderCell: (params) => (
-        <div className='flex justify-center items-center h-full'>
-          <img src={params.value} alt={params.row.model} />
+        <div className='flex justify-center items-center p-2'>
+          <img src={params.value} alt={params.row.model} className="h-3/4 w-3/4 object-contain" />
         </div>
       ),
     },
@@ -324,7 +324,7 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
     },
     {
       field: 'actions',
-      headerName: '',
+      headerName: 'Actions',
       width: 200,
       headerAlign: 'center', align: 'center',
       renderCell: (params) => (
@@ -409,15 +409,15 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
   ];
   console.log(updateMeter)
   return (
-    <div className="container">
-      <h1 className="text-2xl font-bold text-center mb-6">Meter Management</h1>
+    <div>
+      {/* <h1 className="text-2xl font-bold text-center mb-6">Meter Management</h1> */}
       <div className="flex justify-between mb-4 items-center gap-10">
         <input
           type="text"
           placeholder="Search by model"
           value={searchQuery}
           onChange={handleSearchChange}
-          className="p-2 border border-gray-300 rounded flex-1"
+          className="p-2 rounded flex-1 bg-black"
         />
         <button
           className="bg-purple-600 text-white py-2 px-4 rounded hover:bg-purple-500"
@@ -432,7 +432,7 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
           <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
             <div className="bg-gray-800 p-8 rounded-lg shadow-lg relative w-3/4 max-w-4xl">
               <button
-                className="absolute top-2 right-2 text-white"
+                className="absolute top-2 right-2 text-white bg-black"
                 onClick={() => {
                   setActiveTab('get');
                   resetform();
@@ -621,7 +621,7 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
             <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
               <div className="bg-gray-800 p-8 rounded shadow-lg relative w-3/4 max-w-4xl">
                 <button
-                  className="absolute top-2 right-2 text-white"
+                  className="absolute top-2 right-2 text-white bg-black"
                   onClick={() => setActiveTab('get')}
                 >
                   ✕

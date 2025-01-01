@@ -161,7 +161,7 @@ const InspectionCrud: React.FC<InspectionCrudProps> = ({ tab }) => {
             field: 'serial_no',
             headerName: 'Serial No',
             headerAlign: 'center',
-            resizable: false,
+            flex: 1,
             align: 'center',
         },
         {
@@ -206,8 +206,8 @@ const InspectionCrud: React.FC<InspectionCrudProps> = ({ tab }) => {
         },
         {
             field: '',
-            headerName: '',
-            flex: 1,
+            headerName: 'Action',
+            width: 100,
             resizable: false,
             headerAlign: 'center',
             align: 'center',
@@ -220,14 +220,13 @@ const InspectionCrud: React.FC<InspectionCrudProps> = ({ tab }) => {
     ];
 
     return (
-        <div className="container">
-            <h1 className="text-2xl font-bold text-center mb-6">Inspection Management</h1>
-            <button className='bg-green-500 font-bold float-right mx-3' onClick={handleExport}>Export</button>
+        <div>
+            {/* <h1 className="text-2xl font-bold text-center mb-6">Inspection Management</h1> */}
             {activeTab === 'get' && (
                 <div className="tab-content">
                     <div className="flex flex-row justify-around mb-4 gap-5">
                         <select
-                            className="border border-gray-300 rounded p-2 mb-2 w-full bg-gray-900 text-white"
+                            className="border border-gray-300 rounded p-2 w-full bg-gray-900 text-white"
                             value={filterType}
                             onChange={handleFilterChange}
                         >
@@ -239,7 +238,7 @@ const InspectionCrud: React.FC<InspectionCrudProps> = ({ tab }) => {
 
                         {filterType === 'date' && (
                             <select
-                                className="border border-gray-300 rounded p-2 mb-2 w-full bg-gray-900 text-white"
+                                className="border border-gray-300 rounded p-2 w-full bg-gray-900 text-white"
                                 value={dateFilter}
                                 onChange={handleDateFilterChange}
                             >
@@ -253,7 +252,7 @@ const InspectionCrud: React.FC<InspectionCrudProps> = ({ tab }) => {
 
                         {filterType === 'result' && (
                             <select
-                                className="border border-gray-300 rounded p-2 mb-2 w-full bg-gray-900 text-white"
+                                className="border border-gray-300 rounded p-2 w-full bg-gray-900 text-white"
                                 value={resultFilter}
                                 onChange={handleResultFilterChange}
                             >
@@ -264,7 +263,7 @@ const InspectionCrud: React.FC<InspectionCrudProps> = ({ tab }) => {
                         )}
                         {(filterType === 'serial_no' || filterType === 'client') && (
                             <input
-                                className="border border-gray-300 rounded p-2 mb-2 w-full"
+                                className="border border-gray-300 rounded p-2 w-full"
                                 style={{ backgroundColor: '#1F2937', color: 'white' }}
                                 name={filterType}
                                 placeholder={`Filter by ${filterType === 'serial_no' ? 'Serial No' : 'Client'}`}
@@ -275,7 +274,7 @@ const InspectionCrud: React.FC<InspectionCrudProps> = ({ tab }) => {
                         {filterType === 'date' && dateFilter === 'custom' && (
                             <div className="flex flex-row gap-2">
                                 <input
-                                    className="border border-gray-300 rounded p-2 mb-2 w-full"
+                                    className="border border-gray-300 rounded p-2 w-full"
                                     style={{ backgroundColor: '#1F2937', color: 'white' }}
                                     type="date"
                                     name="start"
@@ -283,7 +282,7 @@ const InspectionCrud: React.FC<InspectionCrudProps> = ({ tab }) => {
                                     onChange={handleInputChange}
                                 />
                                 <input
-                                    className="border border-gray-300 rounded p-2 mb-2 w-full"
+                                    className="border border-gray-300 rounded p-2 w-full"
                                     style={{ backgroundColor: '#1F2937', color: 'white' }}
                                     type="date"
                                     name="end"
@@ -292,6 +291,7 @@ const InspectionCrud: React.FC<InspectionCrudProps> = ({ tab }) => {
                                 />
                             </div>
                         )}
+                        <button className='bg-green-500 font-bold' onClick={handleExport}>Export</button>
                     </div>
                     <ThemeProvider theme={theme}>
                         <DataGrid

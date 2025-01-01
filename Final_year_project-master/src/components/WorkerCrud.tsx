@@ -231,17 +231,7 @@ const WorkerCrud: React.FC<WorkerCrudProps> = ({ tab }) => {
   ];
 
   return (
-    <div className="container" >
-      <h1 className="text-2xl font-bold text-center mb-6">Worker Management</h1>
-      <div className="flex justify-end mb-4">
-        <button
-          className="bg-purple-600 text-white py-2 px-4 rounded hover:bg-purple-500"
-          onClick={() => setActiveTab(prevTab => (prevTab === 'add' ? 'get' : 'add'))}
-        >
-          {activeTab === 'add' ? 'Show All' : 'Add'}
-        </button>
-      </div>
-
+    <div>
       {activeTab === 'add' && (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded shadow-lg relative w-1/3">
@@ -304,12 +294,11 @@ const WorkerCrud: React.FC<WorkerCrudProps> = ({ tab }) => {
 
       {activeTab === 'get' && (
         <div className="tab-content">
-          <div className="flex flex-row justify-around mb-4 gap-5">
+          <div className="flex flex-row justify-around mb-4 gap-5 items-center">
 
             {filterType !== 'Recently Joined' ? (
               <input
-                className="border border-gray-300 rounded p-2 mb-2 w-full"
-                style={{ backgroundColor: '#1F2937', color: 'white' }}
+                className="rounded p-2 w-full bg-black"
                 name={filterType === 'Name' ? 'name' : 'reg_no'}
                 placeholder={`Filter by ${filterType}`}
                 value={filterType === 'Name' ? searchName : searchRegNo}
@@ -319,12 +308,18 @@ const WorkerCrud: React.FC<WorkerCrudProps> = ({ tab }) => {
               null
             }
             <div className="w-60">
-              <select className="border border-gray-300 rounded p-2 mb-2 w-full" value={filterType} onChange={handleFilterChange}>
+              <select className="rounded p-2 w-full bg-black" value={filterType} onChange={handleFilterChange}>
                 <option>Name</option>
                 <option>Reg. No.</option>
                 <option>Recently Joined</option>
               </select>
             </div>
+            <button
+              className="bg-purple-600 text-white rounded hover:bg-purple-500"
+              onClick={() => setActiveTab(prevTab => (prevTab === 'add' ? 'get' : 'add'))}
+            >
+              Add
+            </button>
           </div>
           <ThemeProvider theme={theme}>
             <DataGrid

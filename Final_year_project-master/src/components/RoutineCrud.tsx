@@ -111,14 +111,14 @@ const RoutineCrud: React.FC<RoutineCrudProps> = ({ tab }) => {
     const columns: GridColDef[] = [
 
         {
-            field: 'date', headerName: 'Date', flex: 1, resizable: false, headerAlign: 'center', align: 'center',
+            field: 'date', headerName: 'Date', width: 100, resizable: false, headerAlign: 'center', align: 'center',
         },
         {
             field: 'start_time',
             headerName: 'In time',
             headerAlign: 'center',
             resizable: false,
-            width: 150,
+            width: 120,
             align: 'center',
         },
         {
@@ -126,11 +126,12 @@ const RoutineCrud: React.FC<RoutineCrudProps> = ({ tab }) => {
             headerName: 'Out time',
             headerAlign: 'center',
             resizable: false,
-            width: 150,
+            width: 120,
             align: 'center',
         },
-        { field: 'worker_name', headerName: 'Worker Name', flex: 1, resizable: false, headerAlign: 'center', align: 'center', width: 150, },
         { field: 'worker_reg_no', headerName: 'Worker ID', flex: 1, resizable: false, headerAlign: 'center', align: 'center', width: 150, },
+        { field: 'worker_name', headerName: 'Worker Name', flex: 1, resizable: false, headerAlign: 'center', align: 'center', width: 150, },
+
     ];
 
     return (

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import PeopleIcon from '@mui/icons-material/People';
 import SpeedIcon from '@mui/icons-material/Speed';
 import EmailIcon from '@mui/icons-material/Email';
@@ -11,7 +11,7 @@ interface AdminSideBarProps {
 
 const AdminSideBar: React.FC<AdminSideBarProps> = ({ selectedComponent, setSelectedComponent }) => {
   return (
-    <div className="bg-gray-800 text-white flex flex-col fixed left-0 h-full py-2" style={{ width: '15%', overflowY: 'hidden', margin: '0 auto', }}>
+    <div className="bg-gray-800 text-white flex flex-col min-h-screen py-2 w-3/20 sticky">
       <ul className="flex flex-col flex-grow gap-2">
         {/* Worker */}
         <li

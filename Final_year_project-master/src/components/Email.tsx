@@ -7,6 +7,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchWorkers } from '../slices/adminSlice';
 import { sendEmail } from '../slices/adminSlice';
 import useErrorNotifier from '../hooks/useErrorNotifier';
+import '../styles/customScrollbar.css'
+import SendIcon from '@mui/icons-material/Send';
 
 const theme = createTheme({
     components: {
@@ -54,7 +56,6 @@ const Email = () => {
     const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
     const [customEmail, setCustomEmail] = useState<string>('');
     const [customEmails, setCustomEmails] = useState<string[]>([]);
-
     const handleSelectionChange = (selectionModel: GridRowSelectionModel) => {
         const selectedRows = workers.filter((row: any) =>
             selectionModel.includes(row.id)
@@ -72,7 +73,6 @@ const Email = () => {
         }
         if (!customEmails.includes(customEmail)) {
             setCustomEmails([...customEmails, customEmail]);
-            setSelectedEmails([...selectedEmails, customEmail]);
         }
         setCustomEmail('');
     };
@@ -96,11 +96,11 @@ const Email = () => {
         }));
     }, [dispatch, paginationModel]);
     const columns = [
-        { field: 'name', headerName: 'Admin Name', flex: 1 },
-        { field: 'email', headerName: 'Email', flex: 2 },
+        { field: 'name', headerName: 'Admin Name', width: 200 },
+        { field: 'email', headerName: 'Email', flex: 1 },
     ];
     return (
-        <div className="p-4">
+        <div>
             <div className="flex flex-col gap-4 mb-4">
                 <div className="flex gap-2 items-center">
                     <TextField
@@ -124,19 +124,7 @@ const Email = () => {
                     </Button>
                 </div>
 
-                {customEmails.length > 0 && (
-                    <Stack direction="row" spacing={1} flexWrap="wrap">
-                        {customEmails.map((email) => (
-                            <Chip
-                                key={email}
-                                label={email}
-                                onDelete={() => handleRemoveCustomEmail(email)}
-                                color="primary"
-                                className="m-1"
-                            />
-                        ))}
-                    </Stack>
-                )}
+
 
                 <div className="flex justify-between">
                     <span className="text-white">
@@ -147,29 +135,49 @@ const Email = () => {
                         color="primary"
                         onClick={handleSendEmail}
                         disabled={selectedEmails.length + customEmails.length === 0}
+                        className="flex gap-1 items-center"
                     >
-                        Send
+                        <span>Send</span>
+                        <SendIcon />
                     </Button>
                 </div>
+
             </div>
-            <div style={{ width: '100%' }}>
-                <ThemeProvider theme={theme}>
-                    <DataGrid
-                        loading={loading}
-                        rows={workers}
-                        getRowId={(row) => row.id}
-                        columns={columns}
-                        rowCount={meta.total}
-                        pagination
-                        paginationMode='server'
-                        pageSizeOptions={[2, 5, 10, 20, 50, 100]}
-                        paginationModel={paginationModel}
-                        onPaginationModelChange={setPaginationModel}
-                        checkboxSelection
-                        onRowSelectionModelChange={handleSelectionChange}
-                        disableRowSelectionOnClick
-                    />
-                </ThemeProvider>
+            <div className='flex justify-between'>
+                <div className='h-96 overflow-auto custom-scrollbar p-2'>
+                    {customEmails.length > 0 && (
+                        <Stack direction="column" spacing={1} flexWrap="wrap">
+                            {customEmails.map((email) => (
+                                <Chip
+                                    key={email}
+                                    label={email}
+                                    onDelete={() => handleRemoveCustomEmail(email)}
+                                    color="primary"
+                                    className="m-1"
+                                />
+                            ))}
+                        </Stack>
+                    )}
+                </div>
+                <div className='w-3/4'>
+                    <ThemeProvider theme={theme}>
+                        <DataGrid
+                            loading={loading}
+                            rows={workers}
+                            getRowId={(row) => row.id}
+                            columns={columns}
+                            rowCount={meta.total}
+                            pagination
+                            paginationMode='server'
+                            pageSizeOptions={[2, 5, 10, 20, 50, 100]}
+                            paginationModel={paginationModel}
+                            onPaginationModelChange={setPaginationModel}
+                            checkboxSelection
+                            onRowSelectionModelChange={handleSelectionChange}
+                            disableRowSelectionOnClick
+                        />
+                    </ThemeProvider>
+                </div>
             </div>
         </div>
     );

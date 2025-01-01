@@ -30,10 +30,10 @@ const AdminDashboard: React.FC = () => {
   };
   useErrorNotifier({ stateName: 'admin' });
   return (
-    <div className="flex h-screen w-screen mt-20 overflow-hidden">
+    <div className="flex min-h-screen w-full mt-20 overflow-hidden justify-between bg-gray-900 text-white">
       <AdminSideBar selectedComponent={selectedComponent} setSelectedComponent={setSelectedComponent} />
 
-      <div className="flex-grow p-6 ml-60 overflow-auto" >
+      <div className="flex-1 p-6 overflow-auto bg-gray-900" >
         {renderComponent()}
       </div>
     </div>

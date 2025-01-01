@@ -38,7 +38,7 @@ const WorkerDashboard = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-900 flex flex-1 flex-col w-full mt-20">
+      <div className="min-h-screen bg-gray-900 flex flex-1 flex-col w-full mt-20 text-white">
         <div className="grid grid-cols-12 gap-4 p-6 w-full">
           <div className="col-span-12 lg:col-span-8 space-y-4 w-full">
             <div className="col-span-12 lg:col-span-8 w-full">
@@ -51,7 +51,7 @@ const WorkerDashboard = () => {
           <div className="col-span-12 lg:col-span-4 space-y-4 w-full">
             <div className="bg-gray-900 p-4 shadow-md rounded-md w-full">
               <h2 className="text-lg font-semibold mb-2 bg-gray-800 p-2 rounded-md">Live Camera Feed</h2>
-              <div className="h-96 bg-gray-300 rounded flex items-center justify-center">
+              <div className="h-80 bg-gray-300 rounded flex items-center justify-center">
                 {isCapturing ? (
                   <img
                     src='http://localhost:3000/video_feed'

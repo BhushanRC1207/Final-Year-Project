@@ -12,7 +12,7 @@ const Navbar: React.FC = () => {
         dispatch(logoutUser());
     }
     return (
-        <div className="fixed top-0 w-full">
+        <div className="fixed top-0 w-full z-10 text-white">
             <nav className="bg-gray-800 shadow-md p-4 flex justify-between items-center w-full ">
                 <div className='flex items-center gap-5'>
                     <img src="../../logo.jpg" alt="Logo" className="w-12 h-12 rounded-full" />
