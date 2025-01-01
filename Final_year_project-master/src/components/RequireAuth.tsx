@@ -26,7 +26,7 @@ const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
   }, [dispatch, isAuthenticated, loading, navigate]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className='bg-gray-900 text-white min-h-screen min-w-screen flex justify-center items-center'>Loading...</div>;
   }
 
   return <>{children}</>;
