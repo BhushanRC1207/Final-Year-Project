@@ -11,6 +11,7 @@ from results_api.services.results_service import (
     checkMeter,
     export_today_results,
     send_email,
+    getAdminAnalytics,
 )
 
 results_bp = Blueprint("results_bp", __name__)
@@ -37,7 +38,7 @@ def inspect():
 # @check_role("admin")
 def remove_inspection(inspection_id):
     worker_id = get_jwt_identity()
-    return delete_inspection(db, inspection_id,worker_id)
+    return delete_inspection(db, inspection_id, worker_id)
 
 
 @results_bp.route("/analytics/numbers", methods=["GET"])
@@ -71,3 +72,9 @@ def emailSender():
     return send_email(
         email_service_url, port, sender_email, sender_pass, receipant_emails, db
     )
+
+
+@results_bp.route("/adminAnalytics", methods=["GET"])
+@jwt_required
+def adminAnalytics():
+    return getAdminAnalytics(db)

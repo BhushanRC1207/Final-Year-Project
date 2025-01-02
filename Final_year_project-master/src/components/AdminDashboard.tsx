@@ -6,9 +6,10 @@ import InspectionCrud from './InspectionCrud';
 import RoutineCrud from './RoutineCrud';
 import useErrorNotifier from '../hooks/useErrorNotifier';
 import Email from './Email';
+import Analytics from './Analytics';
 
 const AdminDashboard: React.FC = () => {
-  const [selectedComponent, setSelectedComponent] = useState<string>('WorkerCrud');
+  const [selectedComponent, setSelectedComponent] = useState<string>('Analytics');
 
   const renderComponent = () => {
     switch (selectedComponent) {
@@ -24,8 +25,10 @@ const AdminDashboard: React.FC = () => {
         return <RoutineCrud tab={'get'} />;
       case 'Email':
         return <Email />
+      case 'Analytics':
+        return <Analytics />
       default:
-        return <WorkerCrud tab={'get'} />;
+        return <Analytics />
     }
   };
   useErrorNotifier({ stateName: 'admin' });
