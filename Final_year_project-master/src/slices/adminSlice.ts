@@ -40,7 +40,7 @@ interface FetchWorkersParams {
     limit: number;
 }
 
-export const fetchWorkers = createAsyncThunk<FetchWorkersParams, { rejectValue: string }>(
+export const fetchWorkers = createAsyncThunk<{ data: any[], meta: any }, FetchWorkersParams, { rejectValue: string }>(
     'admin/fetchWorkers',
     async ({ name, reg_no, page, limit, user_role, recentlyJoined }, { rejectWithValue }) => {
         try {
@@ -270,7 +270,7 @@ const adminSlice = createSlice({
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(fetchWorkers.fulfilled, (state, action: PayloadAction<Array<any>>) => {
+            .addCase(fetchWorkers.fulfilled, (state, action: PayloadAction<{ data: any[], meta: any }>) => {
                 state.loading = false;
                 state.workers = action.payload.data;
                 state.meta = action.payload.meta;
