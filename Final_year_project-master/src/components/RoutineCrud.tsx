@@ -69,8 +69,10 @@ const RoutineCrud: React.FC<RoutineCrudProps> = ({ tab }) => {
         let startDate: string | null = null;
         let endDate: string | null = null;
         const today = new Date();
-        const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Assuming week starts on Monday
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
         switch (dateFilter) {
             case 'today':
                 startDate = new Date().toISOString().split('T')[0];
@@ -82,7 +84,7 @@ const RoutineCrud: React.FC<RoutineCrudProps> = ({ tab }) => {
                 break;
             case 'this_month':
                 startDate = startOfMonth.toISOString().split('T')[0];
-                endDate = new Date().toISOString().split('T')[0] + 'T23:59:59';
+                endDate = endOfMonth.toISOString().split('T')[0] + 'T23:59:59';
                 break;
             case 'custom':
                 if (!customDateRange.start || !customDateRange.end) {
