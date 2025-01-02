@@ -182,6 +182,23 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
     }
   };
 
+  const handleProtocolChange = (event: React.ChangeEvent<HTMLSelectElement>, type: 'create' | 'update') => {
+    const { name, value } = event.target;
+    if (type === 'create') {
+      setCreateMeter((prev) => ({
+        ...prev,
+        [name]: value,
+        model: `${prev.model.split('-')[0]}-${value}`,
+      }));
+    } else {
+      setUpdateMeter((prev) => ({
+        ...prev,
+        [name]: value,
+        model: `${prev.model.split('-')[0]}-${value}`,
+      }));
+    }
+  };
+
   const handleComConfigure = (event) => {
     const { name, value } = event.target;
     setCreateMeter({
@@ -250,6 +267,21 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
     };
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'create' | 'update') => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (type === 'create') {
+          setCreateMeter({ ...createMeter, photo: reader.result as string });
+        } else {
+          setUpdateMeter({ ...updateMeter, photo: reader.result as string });
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   useEffect(() => {
     dispatch(getMeters({
       page: paginationModel.page + 1,
@@ -276,7 +308,7 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
   }, [masterImage]);
 
   const columns: GridColDef[] = [
-    { field: 'model', headerName: 'Model Name', width: 200, headerAlign: 'center', align: 'center' },
+    { field: 'model', headerName: 'Model Name', width: 150, headerAlign: 'center', align: 'center' },
     {
       field: 'photo',
       headerName: 'Photo',
@@ -458,7 +490,7 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
                             className="border rounded p-2 w-full text-white"
                             name={key}
                             value={value}
-                            onChange={handleInputChange}
+                            onChange={(e) => handleProtocolChange(e, 'create')}
                           >
                             <option value="">Select Protocol</option>
                             <option value="modbus">Modbus</option>
@@ -563,6 +595,12 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
                       </>
                     )
                   }
+                  <div>
+                    <label className="block text-md font-semibold text-white mb-2 float-left" htmlFor="photo">
+                      Upload Meter Image
+                    </label>
+                    <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'create')} className="rounded p-2 w-full text-white bg-gray-900" />
+                  </div>
                 </div>
 
                 <div className="flex flex-col items-center w-1/2">
@@ -647,7 +685,7 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
                               className="border rounded p-2 w-full text-white"
                               name={key}
                               value={value}
-                              onChange={handleUpdate}
+                              onChange={(e) => handleProtocolChange(e, 'update')}
                             >
                               <option value="">Select Protocol</option>
                               <option value="modbus">Modbus</option>
@@ -750,6 +788,12 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
                         ))}
                       </>
                     )}
+                    <div>
+                      <label className="block text-md font-semibold text-white mb-2 float-left" htmlFor="photo">
+                        Upload Meter Image
+                      </label>
+                      <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'update')} className="rounded p-2 w-full text-white bg-gray-900" />
+                    </div>
                   </div>
                   <div className="flex flex-col items-center w-1/2">
                     <img
