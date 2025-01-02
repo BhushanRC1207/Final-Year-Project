@@ -25,14 +25,10 @@ def loginUser(DB, data):
     ):
         raise Exception("Password is incorrect!")
     user_id = str(user["_id"])
-    access_token = create_access_token(
-        identity=str(user_id)
-    )
-    refresh_token = create_refresh_token(
-        identity=str(user_id)
-    )
-    print("access token : ",access_token)
-    print("refresh_token",refresh_token)
+    access_token = create_access_token(identity=str(user_id))
+    refresh_token = create_refresh_token(identity=str(user_id))
+    print("access token : ", access_token)
+    print("refresh_token", refresh_token)
     print("hi")
     DB.update_one(
         {"_id": user["_id"]},
@@ -109,9 +105,12 @@ def createWorker(DB, worker):
 
 """ Get Logged In Worker """
 
- 
+
 def loggedInWorker(DB):
-    access_token = request.cookies.get("access_token") or request.headers.get("Authorization").split(" ")[1]
+    access_token = (
+        request.cookies.get("access_token")
+        or request.headers.get("Authorization").split(" ")[1]
+    )
     if not access_token:
         raise Exception("No access token found!")
     try:
@@ -123,7 +122,7 @@ def loggedInWorker(DB):
     except jwt.InvalidTokenError:
         raise Exception("Invalid access token!")
 
-    if ("sub" not in decoded_token):
+    if "sub" not in decoded_token:
         raise Exception("Invalid access token payload!")
 
     worker_id = ObjectId(decoded_token["sub"])
@@ -141,7 +140,7 @@ def loggedInWorker(DB):
 
 
 def getWorkers(DB):
-    
+
     page = request.args.get("page", 1, type=int)
     limit = request.args.get("limit", 10, type=int)
     reg_no = request.args.get("reg_no")
@@ -213,6 +212,10 @@ def updateWorker(DB, id):
     if "user_role" in updated_data and updated_data["user_role"] == "admin":
         if "email" not in updated_data or existing_worker["email"] == "":
             raise Exception("Update the email first")
+    if "reg_no" in updated_data:
+        existing_worker = DB.find_one({"reg_no": updated_data["reg_no"]})
+        if existing_worker and existing_worker["_id"] != id:
+            raise Exception("Worker with this registration number already exists!")
     updated_worker_data = UpdateWorkerDTO(**updated_data)
     updated_data_dict = updated_worker_data.dict(exclude_unset=True)
     updated_data_dict["updated_at"] = datetime.now()
@@ -276,7 +279,7 @@ def refreshAccessToken(DB):
         except jwt.InvalidTokenError:
             raise Exception("Invalid refresh token!")
 
-        if ("sub" not in decoded_token):
+        if "sub" not in decoded_token:
             raise Exception("Invalid refresh token payload!")
 
         worker_id = ObjectId(decoded_token["sub"])
@@ -290,9 +293,7 @@ def refreshAccessToken(DB):
         if datetime.now() > worker["refresh_token"]["expires_at"]:
             raise Exception("Refresh token has expired!")
         worker_id_str = str(worker_id)
-        access_token = create_access_token(
-            identity=worker_id_str
-        )
+        access_token = create_access_token(identity=worker_id_str)
         DB.update_one(
             {"_id": worker_id},
             {
@@ -307,7 +308,7 @@ def refreshAccessToken(DB):
         response.set_cookie("access_token", access_token, httponly=True)
         return response
     except Exception as e:
-        print("Refresh Error",e)
+        print("Refresh Error", e)
         raise Exception("Refresh Error")
 
 
@@ -315,7 +316,10 @@ def refreshAccessToken(DB):
 
 
 def logoutUser(DB):
-    access_token = request.cookies.get("access_token") or request.headers.get("Authorization").split(" ")[1]
+    access_token = (
+        request.cookies.get("access_token")
+        or request.headers.get("Authorization").split(" ")[1]
+    )
     try:
         decoded_token = jwt.decode(
             access_token, os.getenv("JWT_SECRET_KEY"), algorithms=["HS256"]
@@ -325,7 +329,7 @@ def logoutUser(DB):
     except jwt.InvalidTokenError:
         raise Exception("Invalid access token!")
 
-    if ("sub" not in decoded_token):
+    if "sub" not in decoded_token:
         raise Exception("Invalid refresh token payload!")
 
     worker_id = ObjectId(decoded_token["sub"])

@@ -74,6 +74,7 @@ const WorkerCrud: React.FC<WorkerCrudProps> = ({ tab }) => {
   const [selectedRow, setSelectedRow] = useState<any>(null);
   const [filterType, setFilterType] = useState('Name');
   const [recentlyJoined, setRecentlyJoined] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
     pageSize: 10,
@@ -157,6 +158,8 @@ const WorkerCrud: React.FC<WorkerCrudProps> = ({ tab }) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, files } = e.target;
     if (name === 'photo' && files) {
+      const imgURL = URL.createObjectURL(files[0]);
+      setPhotoPreview(imgURL);
       setCreateForm({ ...createForm, photo: files[0] });
     } else {
       setCreateForm({ ...createForm, [name]: value });
@@ -171,6 +174,7 @@ const WorkerCrud: React.FC<WorkerCrudProps> = ({ tab }) => {
       photo: null,
       email: '',
     });
+    setPhotoPreview(null);
   };
 
   const columns: GridColDef[] = [
@@ -214,6 +218,7 @@ const WorkerCrud: React.FC<WorkerCrudProps> = ({ tab }) => {
               });
               setIsUpdating(true);
               setSelectedRow(params.row.id);
+              setPhotoPreview(params.row.photo);
             }}
           > Update
           </button>
@@ -229,7 +234,6 @@ const WorkerCrud: React.FC<WorkerCrudProps> = ({ tab }) => {
       ),
     },
   ];
-
   return (
     <div>
       {activeTab === 'add' && (
@@ -284,7 +288,7 @@ const WorkerCrud: React.FC<WorkerCrudProps> = ({ tab }) => {
               <option value="worker">Worker</option>
               <option value="admin">Admin</option>
             </select>
-            <span className='flex justify-center m-3'><img src={createForm.photo} alt={`user {formData.reg_no}`} height={50} width={50} /></span>
+            <span className='flex justify-center m-3 text-black'><img src={photoPreview} alt={`user ${createForm.reg_no}`} height={50} width={50} /></span>
             <input className="border border-gray-300 rounded p-2 mb-2 w-full" style={{ backgroundColor: '#1F2937', color: 'white' }} name="photo" type="file" accept="image/*" onChange={handleInputChange} required />
 
             <button className="bg-teal-600 text-white py-2 rounded hover:bg-teal-500" onClick={handleUpdateWorker}>Update Worker</button>
@@ -303,6 +307,7 @@ const WorkerCrud: React.FC<WorkerCrudProps> = ({ tab }) => {
                 placeholder={`Filter by ${filterType}`}
                 value={filterType === 'Name' ? searchName : searchRegNo}
                 onChange={filterType === 'Name' ? (e) => setSearchName(e.target.value) : (e) => setSearchRegNo(e.target.value)}
+                autoComplete='off'
               />
             ) :
               null
@@ -343,7 +348,7 @@ const WorkerCrud: React.FC<WorkerCrudProps> = ({ tab }) => {
       {isDeleteConfirmOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded shadow-lg">
-            <h2 className="text-gray-500  text-lg mb-4">Are you sure you want to delete this Worker ?</h2>
+            <h2 className="text-gray-500  text-lg mb-4">{`Are you sure you want to delete this user ?`}</h2>
             <div className="flex justify-end">
               <button onClick={confirmDelete} className="mr-2 px-4 py-2 bg-red-500 text-white rounded">
                 Yes

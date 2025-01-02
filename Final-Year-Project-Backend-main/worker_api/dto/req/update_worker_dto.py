@@ -11,6 +11,7 @@ class UserRole(str, Enum):
 
 class UpdateWorkerDTO(BaseModel):
     name: Optional[StrictStr]
+    reg_no: Optional[StrictStr]
     password: Optional[StrictStr]
     photo: Optional[StrictStr]
     updated_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
