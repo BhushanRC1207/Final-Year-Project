@@ -10,7 +10,6 @@ import useErrorNotifier from '../hooks/useErrorNotifier';
 
 const columns: GridColDef[] = [
     { field: 'serial_no', headerName: 'Serial No', width: 200, headerAlign: 'center', align: 'center' },
-    { field: 'client', headerName: 'Client', flex: 1, headerAlign: 'center', align: 'center' },
     {
         field: 'date', headerName: 'Date', width: 150, headerAlign: 'center', align: 'center',
         renderCell: (params) => {
