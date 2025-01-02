@@ -9,6 +9,7 @@ from worker_api.services.worker_service import (
     refreshAccessToken,
     logoutUser,
     loggedInWorker,
+    getAdminEmails,
 )
 from middleware.auth import jwt_required, check_role
 from worker_api.dto.req.create_worker_dto import UserRole
@@ -62,3 +63,9 @@ def delete_worker(id):
 @jwt_required
 def logout():
     return logoutUser(db["Worker"])
+
+
+@worker_bp.route("/getEmails", methods=["GET"])
+@jwt_required
+def getEmails():
+    return getAdminEmails(db["Worker"])

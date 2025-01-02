@@ -10,6 +10,7 @@ interface AdminState {
     loading: boolean;
     error: string | null;
     masterImage: string | null;
+    adminEmails: string[];
     meta?: {
         page: number;
         limit: number;
@@ -25,6 +26,7 @@ const initialState: AdminState = {
     loading: false,
     error: null,
     masterImage: null,
+    adminEmails: [],
     meta: {
         page: 1,
         limit: 10,
@@ -256,6 +258,22 @@ export const captureMaster = createAsyncThunk(
     }
 );
 
+export const getAdminEmails = createAsyncThunk(
+    'admin/getAdminEmails',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get('/getEmails');
+            return response.data;
+        } catch (error: any) {
+            if (error.response && error.response.data) {
+                return rejectWithValue(error.response.data.error);
+            } else {
+                return rejectWithValue(error.message);
+            }
+        }
+    }
+);
+
 const adminSlice = createSlice({
     name: 'admin',
     initialState,
@@ -429,6 +447,18 @@ const adminSlice = createSlice({
                 state.masterImage = action.payload.image;
             })
             .addCase(captureMaster.rejected, (state, action: PayloadAction<any>) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(getAdminEmails.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getAdminEmails.fulfilled, (state, action: PayloadAction<any>) => {
+                state.loading = false;
+                state.adminEmails = action.payload;
+            })
+            .addCase(getAdminEmails.rejected, (state, action: PayloadAction<any>) => {
                 state.loading = false;
                 state.error = action.payload;
             });

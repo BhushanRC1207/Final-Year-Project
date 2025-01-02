@@ -350,3 +350,13 @@ def logoutUser(DB):
     response.delete_cookie("access_token")
     response.delete_cookie("refresh_token")
     return response
+
+
+""" Get Admin Emails """
+
+
+def getAdminEmails(DB):
+    admins = list(DB.find({"user_role": "admin"}, {"email": 1, "_id": 1, "name": 1}))
+    for admin in admins:
+        admin["_id"] = str(admin["_id"])
+    return jsonify(admins), 200

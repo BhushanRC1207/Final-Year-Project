@@ -4,7 +4,7 @@ import { Button, TextField, Chip, Stack } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { createTheme } from '@mui/material/styles';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchWorkers } from '../slices/adminSlice';
+import { getAdminEmails } from '../slices/adminSlice';
 import { sendEmail } from '../slices/adminSlice';
 import useErrorNotifier from '../hooks/useErrorNotifier';
 import '../styles/customScrollbar.css'
@@ -48,7 +48,7 @@ const theme = createTheme({
 
 const Email = () => {
     const dispatch = useDispatch();
-    const { workers, loading, meta, error } = useSelector((state: any) => state.admin)
+    const { adminEmails, loading, meta, error } = useSelector((state: any) => state.admin)
     const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
         page: 0,
         pageSize: 10,
@@ -56,11 +56,13 @@ const Email = () => {
     const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
     const [customEmail, setCustomEmail] = useState<string>('');
     const [customEmails, setCustomEmails] = useState<string[]>([]);
+    const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>([]);
     const handleSelectionChange = (selectionModel: GridRowSelectionModel) => {
-        const selectedRows = workers.filter((row: any) =>
-            selectionModel.includes(row.id)
-        );
-        setSelectedEmails(selectedRows.map((row: any) => row.email));
+        setSelectionModel(selectionModel);
+        setSelectedEmails(selectionModel.map((rowId: any) => {
+            const selectedRow = adminEmails.find((row: any) => row._id === rowId);
+            return selectedRow ? selectedRow.email : '';
+        }));
     };
 
     const isValidEmail = (email: string) => {
@@ -87,16 +89,14 @@ const Email = () => {
         const uniqueEmails = [...new Set(allEmails)];
         dispatch(sendEmail(uniqueEmails));
         setSelectedEmails([]);
+        setSelectionModel([]);
+        setCustomEmails([]);
     };
     useEffect(() => {
-        dispatch(fetchWorkers({
-            page: paginationModel.page + 1,
-            limit: paginationModel.pageSize,
-            user_role: 'admin'
-        }));
+        dispatch(getAdminEmails());
     }, [dispatch, paginationModel]);
     const columns = [
-        { field: 'name', headerName: 'Admin Name', width: 200 },
+        { field: 'name', headerName: 'Name', flex: 1 },
         { field: 'email', headerName: 'Email', flex: 1 },
     ];
     return (
@@ -163,18 +163,18 @@ const Email = () => {
                     <ThemeProvider theme={theme}>
                         <DataGrid
                             loading={loading}
-                            rows={workers}
-                            getRowId={(row) => row.id}
+                            rows={adminEmails}
                             columns={columns}
-                            rowCount={meta.total}
+                            getRowId={(row) => row._id}
                             pagination
-                            paginationMode='server'
+                            paginationMode='client'
                             pageSizeOptions={[2, 5, 10, 20, 50, 100]}
                             paginationModel={paginationModel}
                             onPaginationModelChange={setPaginationModel}
                             checkboxSelection
                             onRowSelectionModelChange={handleSelectionChange}
                             disableRowSelectionOnClick
+                            rowSelectionModel={selectionModel}
                         />
                     </ThemeProvider>
                 </div>
