@@ -25,10 +25,8 @@ const AdminDashboard: React.FC = () => {
         return <RoutineCrud tab={'get'} />;
       case 'Email':
         return <Email />
-      case 'Analytics':
-        return <Analytics />
       default:
-        return <Analytics />
+        return <WorkerCrud tab={'get'} />;
     }
   };
   useErrorNotifier({ stateName: 'admin' });

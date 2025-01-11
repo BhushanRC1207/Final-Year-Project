@@ -49,38 +49,39 @@ def handlePagination(DB):
 
 def create_inspection(DB, data):
     data = ResultsRequestDTO(**data)
+    unique_id = data.serial_no + "-" + str(data.meter_id)
     meter = DB["Multimeter"].find_one({"_id": ObjectId(data.meter_id)})
     if not meter:
         raise Exception("Meter not found!")
-    if data.serial_no:
-        exists = DB["Result"].find_one({"serial_no": data.serial_no})
-        if exists:
-            DB["Result"].update_one(
-                {"_id": ObjectId(exists["_id"])},
+    exists = DB["Result"].find_one({"unique_id": unique_id})
+    if exists:
+        DB["Result"].update_one(
+            {"_id": ObjectId(exists["_id"])},
+            {
+                "$set": {
+                    "meter_id": data.meter_id,
+                    "worker_id": data.worker_id,
+                    "status": data.status,
+                    "date": datetime.now(),
+                }
+            },
+        )
+        data, total, page, limit = handlePagination(DB["Result"])
+        return (
+            jsonify(
                 {
-                    "$set": {
-                        "meter_id": data.meter_id,
-                        "worker_id": data.worker_id,
-                        "status": data.status,
-                        "date": datetime.now(),
-                    }
-                },
-            )
-            data, total, page, limit = handlePagination(DB["Result"])
-            return (
-                jsonify(
-                    {
-                        "data": data,
-                        "meta": {"total": total, "page": page, "limit": limit},
-                    }
-                ),
-                201,
-            )
+                    "data": data,
+                    "meta": {"total": total, "page": page, "limit": limit},
+                }
+            ),
+            201,
+        )
     inspection = {
         "serial_no": data.serial_no,
         "meter_id": data.meter_id,
         "worker_id": data.worker_id,
         "status": data.status,
+        "unique_id": unique_id,
         "date": datetime.now(),
     }
     DB["Result"].insert_one(inspection)

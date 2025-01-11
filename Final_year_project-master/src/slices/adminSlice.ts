@@ -178,7 +178,6 @@ export const getMeters = createAsyncThunk('admin/getMeters', async (params, { re
 
 export const addMeter = createAsyncThunk('admin/addMeter', async (meter, { rejectWithValue }) => {
     try {
-        meter['model'] = meter['model'] + '-' + meter['com_protocol']
         const response = await axiosInstance.post(`/multimeter`, meter, {
             'headers': {
                 'Content-Type': 'application/json',

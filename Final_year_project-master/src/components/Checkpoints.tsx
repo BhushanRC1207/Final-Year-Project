@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { checkMeter, createInspection, getMeters, resetInspectionStatus, changeCapture, changeMasterImage, changeDiff, resetod, getSerialNumber, changeSerialNumber, saveImages } from '../slices/inspectionSlice';
 import useErrorNotifier from '../hooks/useErrorNotifier';
-import { set } from 'react-datepicker/dist/date_utils';
+
 
 enum InspectionStatus {
     pass = 'pass',
@@ -144,8 +144,6 @@ const Checkpoints: React.FC = () => {
             dispatch(getSerialNumber(data));
         }
     }, [inspectionStatus, od, currentMeter, dispatch]);
-    console.log(inspectionForm)
-
     useErrorNotifier({ stateName: 'inspection' });
 
     return (

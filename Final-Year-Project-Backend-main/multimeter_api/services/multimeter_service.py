@@ -36,6 +36,10 @@ def handlePagination(DB):
 
 
 def createMultimeter(DB, multimeter):
+    multimeter["model"] = multimeter["model"].upper() + "-" + multimeter["com_protocol"]
+    existing_multimeter = DB.find_one({"model": multimeter["model"]})
+    if existing_multimeter:
+        raise (Exception("Multimeter already exists!"))
     cover_image = request.json["photo"]
     if not cover_image:
         raise (Exception("Please provide image!"))
@@ -105,6 +109,15 @@ def getMultimeters(DB):
 
 
 def updateMultimeter(DB, updated_data, id):
+    if "model" in updated_data:
+        updated_data["model"] = (
+            updated_data["model"].split("-")[0].upper()
+            + "-"
+            + updated_data["com_protocol"]
+        )
+        existing_multimeter = DB.find_one({"model": updated_data["model"]})
+        if existing_multimeter:
+            raise (Exception("Multimeter already exists!"))
     id = ObjectId(id)
     existing_multimeter = DB.find_one({"_id": id})
     if not existing_multimeter:

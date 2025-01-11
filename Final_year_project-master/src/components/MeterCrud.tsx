@@ -188,13 +188,11 @@ const MeterCrud: React.FC<MeterCrudProps> = ({ tab }) => {
       setCreateMeter((prev) => ({
         ...prev,
         [name]: value,
-        model: `${prev.model.split('-')[0]}-${value}`,
       }));
     } else {
       setUpdateMeter((prev) => ({
         ...prev,
         [name]: value,
-        model: `${prev.model.split('-')[0]}-${value}`,
       }));
     }
   };

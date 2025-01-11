@@ -13,6 +13,8 @@ const axiosInstance = axios.create({
 let isRefreshing = false;
 let refreshSubscribers: ((token: string) => void)[] = [];
 let isLoggedOut = false;
+const MAX_RETRIES = 3;
+let retryCount = 0;
 
 function onRefreshed(token: string) {
   refreshSubscribers.forEach((callback) => callback(token));
@@ -55,8 +57,17 @@ axiosInstance.interceptors.response.use(
         });
       }
 
+      if (retryCount >= MAX_RETRIES) {
+        isRefreshing = false;
+        isLoggedOut = true;
+        window.location.href = '/';
+        localStorage.removeItem('access_token');
+        return Promise.reject(new Error('Maximum retries reached'));
+      }
+
       originalRequest._retry = true;
       isRefreshing = true;
+      retryCount += 1;
 
       try {
         const response = await axios.get(`${BASE_URL}/refresh`, {
@@ -69,6 +80,7 @@ axiosInstance.interceptors.response.use(
         const newAccessToken = response.data.token;
         localStorage.setItem('access_token', newAccessToken);
         isRefreshing = false;
+        retryCount = 0;
         onRefreshed(newAccessToken);
 
         originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;

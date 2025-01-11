@@ -14,14 +14,14 @@ const AdminSideBar: React.FC<AdminSideBarProps> = ({ selectedComponent, setSelec
     <div className="bg-gray-800 text-white flex flex-col min-h-screen py-2 w-3/20 sticky">
       <ul className="flex flex-col flex-grow gap-2">
 
-        <li
+        {/* <li
           className={`flex items-center p-4 font-bold cursor-pointer hover:bg-gray-600 ${selectedComponent === 'Analytics' ? 'bg-gray-700' : ''
             }`}
           onClick={() => setSelectedComponent('Analytics')}
         >
           <SpeedIcon className='mr-3' />
           <span>Analytics</span>
-        </li>
+        </li> */}
 
         {/* Worker */}
         <li
